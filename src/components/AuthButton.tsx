@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 export function AuthButton() {
   const { data: session, status } = useSession();
@@ -12,30 +12,26 @@ export function AuthButton() {
   }
 
   if (session?.user) {
+    const initial = (session.user.name?.[0] ?? session.user.email?.[0] ?? "?").toUpperCase();
     return (
       <button
         onClick={() => signOut()}
         className="flex items-center gap-2 border border-foreground/20 hover:border-orange/40 text-foreground/70 hover:text-foreground font-medium px-4 py-2 rounded-full text-sm transition-all"
       >
-        {session.user.image && (
-          <img
-            src={session.user.image}
-            alt=""
-            className="w-5 h-5 rounded-full"
-            referrerPolicy="no-referrer"
-          />
-        )}
+        <span className="w-5 h-5 rounded-full bg-orange/20 text-orange text-[10px] font-bold flex items-center justify-center">
+          {initial}
+        </span>
         Sign Out
       </button>
     );
   }
 
   return (
-    <button
-      onClick={() => signIn("google")}
+    <a
+      href="/auth/signin"
       className="bg-orange hover:bg-orange-dark text-warm-black font-semibold px-5 py-2 rounded-full text-sm transition-colors"
     >
       Get Started
-    </button>
+    </a>
   );
 }

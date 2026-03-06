@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import Image from "next/image";
-import { SignInForm } from "@/components/SignInForm";
+import { SignUpForm } from "@/components/SignUpForm";
 
 export const metadata: Metadata = {
-  title: "Sign In — Zontak | Get a One-Page App",
+  title: "Sign Up — Zontak | Get a One-Page App",
   description:
-    "Sign in to submit your project brief. Our AI builds your one-page app.",
+    "Create your account to submit a project brief. Our AI builds your one-page app.",
   robots: { index: false, follow: false },
 };
 
-export default async function SignInPage() {
+export default async function SignUpPage() {
   const session = await auth();
   if (session?.user) redirect("/#contact");
 
   return (
-    <main className="min-h-screen bg-warm-black text-foreground flex items-center justify-center">
+    <main className="min-h-screen bg-warm-black text-foreground flex items-center justify-center py-12">
       <div className="fixed inset-0 bg-gradient-to-b from-warm-black via-warm-gray/10 to-warm-black pointer-events-none" />
 
       <div className="relative z-10 max-w-md mx-auto px-6 text-center">
@@ -45,18 +45,18 @@ export default async function SignInPage() {
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-          Sign in to <span className="text-gradient-sun">build</span>
+          Create your <span className="text-gradient-sun">account</span>
         </h1>
         <p className="text-foreground/50 mb-10 max-w-sm mx-auto">
-          Enter your email and password to submit your project brief.
-          Our AI-powered workflow will turn it into a real website.
+          Sign up to get started. Your first project is free &mdash;
+          no credit card required.
         </p>
 
-        {/* Email/password form */}
-        <SignInForm />
+        {/* Registration form */}
+        <SignUpForm />
 
         <p className="mt-8 text-xs text-foreground/30">
-          No credit card required. Your first project is completely free.
+          By creating an account you agree to our terms of service.
         </p>
 
         {/* Back to home */}
