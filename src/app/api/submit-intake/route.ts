@@ -117,7 +117,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } else if (kvClient) {
     // Check paid credits
     const credits = await getOrCreateCredits(email, kvClient);
-    if (credits.remaining <= 0) {
+    if (credits.total - credits.used <= 0) {
       return NextResponse.json(
         {
           error: "No credits remaining. Purchase a plan to continue.",

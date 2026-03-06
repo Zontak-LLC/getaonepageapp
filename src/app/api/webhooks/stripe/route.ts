@@ -25,10 +25,12 @@ import { CREDITS_INCLUDED } from "@/lib/graph-types";
 import type { CreditRecord } from "@/lib/graph-types";
 import { loadCredits, saveCredits } from "@/lib/graph-state";
 import type { KVStore } from "@/lib/graph-state";
+import { buildPaymentWelcomeEmail } from "@/emails/payment-welcome";
+import { buildPaymentNotificationEmail } from "@/emails/payment-notification";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-12-18.acacia",
+    apiVersion: "2026-02-25.clover",
   });
 }
 
@@ -155,32 +157,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const fromEmail = process.env.FROM_EMAIL ?? "Zontak <noreply@getaonepageapp.com>";
 
-      // Welcome email to customer
+      // Welcome email to customer (rich HTML template)
       await resend.emails.send({
         from: fromEmail,
         to: [customerEmail],
-        subject: "Welcome to Zontak — your project credits are ready",
-        html: `<p>Hi ${customerName || "there"},</p>
-<p>Thanks for your ${plan} purchase (${amount})! You now have <strong>${CREDITS_INCLUDED} project credits</strong>.</p>
-<p>Head to <a href="https://getaonepageapp.com/#contact">getaonepageapp.com</a> to submit your project brief.</p>
-<p>— The Zontak Team</p>`,
+        subject: `Welcome to Zontak — your ${plan} credits are ready`,
+        html: buildPaymentWelcomeEmail({
+          name: customerName,
+          email: customerEmail,
+          tier: plan,
+          amount,
+          sessionId: session.id,
+        }),
         replyTo: process.env.NOTIFY_EMAIL,
       });
 
-      // Team notification
+      // Team notification (rich HTML template)
       if (process.env.NOTIFY_EMAIL) {
         await resend.emails.send({
           from: fromEmail,
           to: [process.env.NOTIFY_EMAIL],
           subject: `New Payment: ${customerName || customerEmail} (${plan} ${amount})`,
-          html: `<p><strong>New payment received</strong></p>
-<ul>
-  <li>Customer: ${customerName} (${customerEmail})</li>
-  <li>Plan: ${plan}</li>
-  <li>Amount: ${amount}</li>
-  <li>Session: ${session.id}</li>
-  <li>Time: ${new Date().toISOString()}</li>
-</ul>`,
+          html: buildPaymentNotificationEmail({
+            name: customerName,
+            email: customerEmail,
+            tier: plan,
+            amount,
+            sessionId: session.id,
+            timestamp: new Date().toISOString(),
+          }),
           replyTo: customerEmail,
         });
       }

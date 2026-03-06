@@ -21,7 +21,7 @@ const PRICE_MAP: Record<string, { amount: number; name: string }> = {
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-12-18.acacia",
+    apiVersion: "2026-02-25.clover",
   });
 }
 
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       },
     ],
-    success_url: `${baseUrl}/?checkout=success`,
+    success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/#pricing`,
   });
 
