@@ -200,12 +200,12 @@ export interface CreditRecord {
   email: string;
   total: number;    // credits allocated
   used: number;     // credits consumed
-  plan: "standard";
+  plan: "standard" | "starter" | "pro" | "premium";
   createdAt: string;
   updatedAt: string;
 }
 
-export const CREDITS_INCLUDED = 3;  // included with every $100/year subscription
+export const CREDITS_INCLUDED = 3;  // 3 revision credits included with every project ($29/$49/$79)
 export const CREDITS_KV_PREFIX = "credits:";
 export const SESSION_KV_PREFIX = "session:";
 export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;  // 30 days

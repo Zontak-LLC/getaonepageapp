@@ -295,17 +295,29 @@ Dark-themed HTML with:
 Professional confirmation with:
 - Personalized greeting
 - **Live site link** with "View Your Live Site" CTA button (when deployed)
-- Stripe checkout CTA ($100/year subscription)
+- Stripe checkout CTA (per-project pricing from $29)
 - Refined brief and proposed spec
 - Remaining revision credits
 
 ---
 
+## Pricing Model
+
+Per-project pricing based on a **3x–5x markup on token cost**:
+
+| Tier | Token Cost | Price | Use Case |
+|---|---|---|---|
+| **Starter** | ~$4–5 | **$29** | Simple one-page site, local business or personal brand |
+| **Pro** | ~$8–10 | **$49** | Custom styling, more sections, SEO-optimized copy |
+| **Premium** | ~$12–15 | **$79** | Complex multi-section site, custom palette, priority build |
+
+All tiers include: build, deploy, Cloudflare hosting, SSL, and 3 revision credits.
+
 ## Credit System
 
 | Event | Credits |
 |---|---|
-| Account creation | 3 credits (included with $100/year subscription) |
+| Project purchase | 3 revision credits (included with every $29/$49/$79 project) |
 | First submission | Free (iterationCount = 0) |
 | Each revision | 1 credit deducted |
 | Exhausted | Warning logged, delivery proceeds (enforcement in V2) |

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SessionProvider } from "@/components/SessionProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Zontak | AI-First Creative Company — One-Page App Websites",
   description:
-    "Zontak builds fast, mobile-first one-page app websites for $100/year. Full service: build, deploy, and maintain. AI-first creative company.",
+    "Zontak builds fast, mobile-first one-page app websites from $29/project. Full service: build, deploy, and maintain. AI-first creative company.",
   keywords: [
     "one page app",
     "website builder",
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     "Zontak",
   ],
   openGraph: {
-    title: "Zontak | One-Page App Websites — $100/year",
+    title: "Zontak | One-Page App Websites — from $29/project",
     description:
       "Fast, mobile-first one-page app websites. Full service: build, deploy, and maintain.",
     url: "https://getaonepage.app",
@@ -44,7 +45,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );

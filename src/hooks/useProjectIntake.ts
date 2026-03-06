@@ -1,6 +1,7 @@
 "use client";
 
-import { useReducer, useCallback, useEffect, useState } from "react";
+import { useReducer, useCallback, useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import type {
   FormStep,
   IntakeState,
@@ -112,6 +113,8 @@ export function useProjectIntake() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sessionMeta, setSessionMeta] = useState<SessionMeta | null>(null);
   const [iterationCount, setIterationCount] = useState(0);
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  const { data: authSession, status: authStatus } = useSession();
 
   // Restore from localStorage on mount
   useEffect(() => {
@@ -145,12 +148,19 @@ export function useProjectIntake() {
    *   4. On failure: graceful fallback — mark submitted locally; manual Refine available
    */
   const submit = useCallback(async () => {
+    // Redirect to sign-in if not authenticated
+    if (authStatus !== "authenticated" || !authSession?.user) {
+      window.location.href = "/auth/signin";
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const tempBrief = generateBrief(state.data);
       const plainText = formatPlainText(tempBrief);
+      const honeypot = honeypotRef.current?.value ?? "";
 
-      const result = await submitIntake(state.data, plainText, iterationCount);
+      const result = await submitIntake(state.data, plainText, iterationCount, honeypot);
 
       dispatch({ type: "SUBMIT" });
 
@@ -172,7 +182,7 @@ export function useProjectIntake() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [state.data, iterationCount]);
+  }, [state.data, iterationCount, authSession, authStatus]);
 
   /**
    * Manual re-refinement — used as fallback when auto-submit failed (dev / network error)
@@ -225,6 +235,8 @@ export function useProjectIntake() {
 
     refineWithAI,
 
+    honeypotRef,
+    isAuthenticated: authStatus === "authenticated",
     canGoBack: currentIdx > 0,
     canGoForward: currentIdx < FORM_STEPS.length - 1,
     isReviewStep: state.currentStep === "review",

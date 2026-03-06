@@ -21,6 +21,7 @@ export function ProjectIntakeForm() {
     submit,
     reset,
     refineWithAI,
+    honeypotRef,
     canGoBack,
     isReviewStep,
     isSubmitted,
@@ -144,6 +145,16 @@ export function ProjectIntakeForm() {
               }
             }}
           >
+            {/* Honeypot — hidden from humans, bots fill it */}
+            <input
+              ref={honeypotRef}
+              type="text"
+              name="website_url"
+              autoComplete="off"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="absolute -left-[9999px] opacity-0 h-0 w-0"
+            />
             {renderStep()}
 
             {/* Navigation Buttons */}

@@ -191,11 +191,11 @@ export function clientEmailHtml(
   // CTA text changes based on whether site is already built
   const ctaText = siteUrl
     ? "Get Custom Domain + Hosting →"
-    : "Pay $100 / year to Start →";
+    : "Get Started — from $29 →";
 
   const ctaSubtext = siteUrl
-    ? "Custom domain · SSL · Maintenance · All included for 1 year"
-    : "Build · Deploy · Hosting · SSL · Maintenance · All included";
+    ? "Custom domain · SSL · Hosting · All included"
+    : "Build · Deploy · Hosting · SSL · 3 revisions included";
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e0e0e0">
@@ -238,7 +238,7 @@ export function clientEmailHtml(
   </div>
 
   <div style="text-align:center;margin-bottom:32px">
-    <a href="https://buy.stripe.com/6oU5kw8yRd603SI0bNfjG00"
+    <a href="https://getaonepageapp.com/#pricing"
        style="display:inline-block;background:#F07D2E;color:#0d0d0d;font-weight:700;font-size:15px;padding:16px 36px;border-radius:999px;text-decoration:none">
       ${ctaText}
     </a>

@@ -36,11 +36,12 @@ export async function submitIntake(
   data: ProjectIntakeData,
   plainText: string,
   iterationCount = 0,
+  honeypot = "",
 ): Promise<GraphResult> {
   const response = await fetch("/api/submit-intake", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data, plainText, iterationCount }),
+    body: JSON.stringify({ data, plainText, iterationCount, honeypot }),
   });
 
   let result: GraphResult;

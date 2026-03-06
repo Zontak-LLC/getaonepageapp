@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { ProjectIntakeForm } from "@/components/project-intake";
+import { AuthButton } from "@/components/AuthButton";
+import { PricingButton } from "@/components/PricingButton";
 
 /* ─── Icon Components ─── */
 
@@ -75,12 +77,7 @@ export default function Home() {
             <a href="#pay" className="hover:text-orange transition-colors">Pay</a>
             <a href="#contact" className="hover:text-orange transition-colors">Contact</a>
           </div>
-          <a
-            href="#contact"
-            className="bg-orange hover:bg-orange-dark text-warm-black font-semibold px-5 py-2 rounded-full text-sm transition-colors"
-          >
-            Get Started
-          </a>
+          <AuthButton />
         </div>
       </nav>
 
@@ -119,8 +116,9 @@ export default function Home() {
 
           <div className="mt-10 mb-12">
             <div className="inline-flex items-baseline gap-1 bg-warm-gray/60 border border-orange/20 rounded-2xl px-8 py-4">
-              <span className="text-5xl md:text-6xl font-bold text-gradient-sun">$100</span>
-              <span className="text-xl text-foreground/50">/year</span>
+              <span className="text-lg text-foreground/50 mr-1">from</span>
+              <span className="text-5xl md:text-6xl font-bold text-gradient-sun">$29</span>
+              <span className="text-xl text-foreground/50">/project</span>
             </div>
           </div>
 
@@ -232,38 +230,101 @@ export default function Home() {
       {/* ─── Pricing CTA ─── */}
       <section id="pricing" className="relative py-32 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-warm-gray/20 to-background" />
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
           <div className="inline-block rounded-full bg-orange/10 border border-orange/20 px-4 py-1 text-orange text-sm font-medium mb-8">
-            Simple Pricing
+            Per-Project Pricing
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="text-gradient-sun">$100</span>
-            <span className="text-foreground/40">/year</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Pay for the <span className="text-gradient-sun">Outcome</span>
           </h2>
-          <p className="text-foreground/60 text-lg mb-2">That&apos;s less than $9/month for a complete web presence.</p>
-          <p className="text-foreground/40 text-sm mb-12">Build + deploy + hosting + SSL + maintenance. Everything.</p>
+          <p className="text-foreground/60 text-lg mb-2">You pay for a working website — not API calls.</p>
+          <p className="text-foreground/40 text-sm mb-12">Every plan includes build, deploy, hosting, SSL, and 3 free revisions.</p>
 
-          <div className="bg-warm-gray/40 border border-orange/15 rounded-3xl p-8 md:p-12 text-left">
-            <ul className="space-y-4">
-              {[
-                "Custom one-page app — not a template",
-                "Deployed on Cloudflare edge network",
-                "Your own custom domain",
-                "SSL certificate included",
-                "Mobile-first responsive design",
-                "Basic SEO optimization",
-                "Contact form integration",
-                "Ongoing maintenance & updates",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-foreground/70">{item}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Starter */}
+            <div className="bg-warm-gray/40 border border-orange/10 rounded-3xl p-8 text-left hover:border-orange/30 transition-all flex flex-col">
+              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-3">Starter</p>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-foreground">$29</span>
+              </div>
+              <p className="text-foreground/50 text-sm mb-6">Simple one-page site for a local business or personal brand.</p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Single-page responsive site",
+                  "Cloudflare edge hosting",
+                  "SSL certificate",
+                  "3 revisions included",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <svg className="w-4 h-4 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-foreground/60 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <PricingButton tier="starter" />
+            </div>
+
+            {/* Pro */}
+            <div className="bg-warm-gray/40 border-2 border-orange/40 rounded-3xl p-8 text-left relative hover:border-orange/60 transition-all flex flex-col">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-warm-black text-xs font-bold px-3 py-1 rounded-full">
+                Most Popular
+              </div>
+              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-3">Pro</p>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-foreground">$49</span>
+              </div>
+              <p className="text-foreground/50 text-sm mb-6">Custom styling, more sections, and SEO-optimized copy.</p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Everything in Starter",
+                  "Custom domain setup",
+                  "SEO optimization",
+                  "Contact form integration",
+                  "3 revisions included",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <svg className="w-4 h-4 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-foreground/60 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <PricingButton tier="pro" variant="solid" />
+            </div>
+
+            {/* Premium */}
+            <div className="bg-warm-gray/40 border border-orange/10 rounded-3xl p-8 text-left hover:border-orange/30 transition-all flex flex-col">
+              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-3">Premium</p>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-foreground">$79</span>
+              </div>
+              <p className="text-foreground/50 text-sm mb-6">Complex site with extensive content, custom palette, and priority build.</p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Everything in Pro",
+                  "Extensive multi-section layout",
+                  "Custom color palette",
+                  "Priority AI pipeline",
+                  "3 revisions included",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <svg className="w-4 h-4 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-foreground/60 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <PricingButton tier="premium" />
+            </div>
           </div>
+
+          <p className="text-foreground/30 text-xs mt-8">
+            Hosting on Cloudflare is free. No recurring fees unless you need ongoing updates.
+          </p>
         </div>
       </section>
 
@@ -282,22 +343,13 @@ export default function Home() {
             Pay for Your <span className="text-gradient-sun">Site</span>
           </h2>
           <p className="text-foreground/50 text-lg mb-12">
-            One payment. Everything included — build, deploy, hosting, SSL, and a year of maintenance.
+            One payment per project. Build, deploy, hosting, and SSL included.
           </p>
 
           {/* Stripe CTA */}
-          <a
-            href="https://buy.stripe.com/6oU5kw8yRd603SI0bNfjG00"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center justify-center gap-3 bg-orange hover:bg-orange-dark text-warm-black font-bold px-10 py-5 rounded-full text-lg transition-all hover:scale-105 shadow-xl shadow-orange/25"
-          >
-            {/* Card icon */}
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
-            Pay $100 / year
-          </a>
+          <div className="inline-block">
+            <PricingButton tier="starter" label="Get Started — from $29" variant="solid" />
+          </div>
 
           {/* Stripe trust badge */}
           <div className="mt-6 flex items-center justify-center gap-2 text-foreground/25 text-xs">
