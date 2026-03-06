@@ -158,3 +158,61 @@ html {
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
 }
+
+/* Scroll-triggered entrance animation (replaces framer-motion whileInView) */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.55s ease-out both;
+}
+
+/* Staggered entrance delays for grid children */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+
+/* Sun glow box-shadow for CTA banners (orange variant) */
+.sun-glow-orange {
+  box-shadow:
+    0 0 60px rgba(240, 125, 46, 0.08),
+    0 0 120px rgba(240, 125, 46, 0.04);
+}
+
+/* Custom range slider track for orange theme */
+input[type="range"].slider-orange {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: var(--warm-gray);
+  border-radius: 9999px;
+  outline: none;
+}
+
+input[type="range"].slider-orange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: var(--orange);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(240, 125, 46, 0.4);
+}
+
+input[type="range"].slider-orange::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: var(--orange);
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(240, 125, 46, 0.4);
+}

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ProjectIntakeForm } from "@/components/project-intake";
 import { AuthButton } from "@/components/AuthButton";
 import { PricingButton } from "@/components/PricingButton";
+import { PricingSection } from "@/components/PricingSection";
 
 /* ─── Icon Components ─── */
 
@@ -227,106 +228,8 @@ export default function Home() {
       {/* ─── Divider ─── */}
       <div className="divider-sun" />
 
-      {/* ─── Pricing CTA ─── */}
-      <section id="pricing" className="relative py-32 px-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-warm-gray/20 to-background" />
-        <div className="relative z-10 max-w-5xl mx-auto text-center">
-          <div className="inline-block rounded-full bg-orange/10 border border-orange/20 px-4 py-1 text-orange text-sm font-medium mb-8">
-            Per-Project Pricing
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Pay for the <span className="text-gradient-sun">Outcome</span>
-          </h2>
-          <p className="text-foreground/60 text-lg mb-2">You pay for a working website — not API calls.</p>
-          <p className="text-foreground/40 text-sm mb-12">Every plan includes build, deploy, hosting, SSL, and 3 free revisions.</p>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Starter */}
-            <div className="bg-warm-gray/40 border border-orange/10 rounded-3xl p-8 text-left hover:border-orange/30 transition-all flex flex-col">
-              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-3">Starter</p>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-foreground">$29</span>
-              </div>
-              <p className="text-foreground/50 text-sm mb-6">Simple one-page site for a local business or personal brand.</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Single-page responsive site",
-                  "Cloudflare edge hosting",
-                  "SSL certificate",
-                  "3 revisions included",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <svg className="w-4 h-4 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-foreground/60 text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <PricingButton tier="starter" />
-            </div>
-
-            {/* Pro */}
-            <div className="bg-warm-gray/40 border-2 border-orange/40 rounded-3xl p-8 text-left relative hover:border-orange/60 transition-all flex flex-col">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-warm-black text-xs font-bold px-3 py-1 rounded-full">
-                Most Popular
-              </div>
-              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-3">Pro</p>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-foreground">$49</span>
-              </div>
-              <p className="text-foreground/50 text-sm mb-6">Custom styling, more sections, and SEO-optimized copy.</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Everything in Starter",
-                  "Custom domain setup",
-                  "SEO optimization",
-                  "Contact form integration",
-                  "3 revisions included",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <svg className="w-4 h-4 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-foreground/60 text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <PricingButton tier="pro" variant="solid" />
-            </div>
-
-            {/* Premium */}
-            <div className="bg-warm-gray/40 border border-orange/10 rounded-3xl p-8 text-left hover:border-orange/30 transition-all flex flex-col">
-              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-3">Premium</p>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-foreground">$79</span>
-              </div>
-              <p className="text-foreground/50 text-sm mb-6">Complex site with extensive content, custom palette, and priority build.</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Everything in Pro",
-                  "Extensive multi-section layout",
-                  "Custom color palette",
-                  "Priority AI pipeline",
-                  "3 revisions included",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <svg className="w-4 h-4 text-orange mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-foreground/60 text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <PricingButton tier="premium" />
-            </div>
-          </div>
-
-          <p className="text-foreground/30 text-xs mt-8">
-            Hosting on Cloudflare is free. No recurring fees unless you need ongoing updates.
-          </p>
-        </div>
-      </section>
+      {/* ─── Pricing ─── */}
+      <PricingSection />
 
       {/* ─── Divider ─── */}
       <div className="divider-sun" />
