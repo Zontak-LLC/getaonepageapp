@@ -8,8 +8,9 @@
  *   2. Parse body
  *   3. Honeypot check — silent fake-200 if bot fills hidden field
  *   4. Rate limit — 5 requests per hour per email
- *   5. Demo/credit check — first submission free, then requires payment
+ *   5. Credit check — requires payment
  *   6. Override email — use session email (prevents spoofing)
+ *   7. Admin notification — email dzontak@gmail.com on new request
  *
  * Then runs the full graph:
  *   assess → generate → validate (→ generate retry) → deliver
@@ -22,7 +23,7 @@ import { createSession, saveSession, getOrCreateCredits, deductCredit } from "@/
 import { executeGraph, type GraphEnv } from "@/lib/graph-executor";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
-import { hasDemoBeenUsed, markDemoUsed } from "@/lib/demo-store";
+import { sendNewRequestNotification } from "@/lib/admin-notify";
 
 // Vercel serverless function max duration (Pro plan allows up to 60s)
 export const maxDuration = 60;
@@ -97,24 +98,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // ── 5. Demo / credit check ─────────────────────────────────────────────────
-  const demoUsed = await hasDemoBeenUsed(email);
-
-  if (!demoUsed) {
-    // First submission is free — will mark demo used after success
-  } else {
-    // Check paid credits
-    const credits = await getOrCreateCredits(email);
-    if (credits.total - credits.used <= 0) {
-      return NextResponse.json(
-        {
-          error: "No credits remaining. Purchase a plan to continue.",
-          code: "NO_CREDITS",
-          creditsRemaining: 0,
-        },
-        { status: 402 },
-      );
-    }
+  // ── 5. Credit check ───────────────────────────────────────────────────────
+  const credits = await getOrCreateCredits(email);
+  if (credits.total - credits.used <= 0) {
+    return NextResponse.json(
+      {
+        error: "No credits remaining. Purchase a plan to continue.",
+        code: "NO_CREDITS",
+        creditsRemaining: 0,
+      },
+      { status: 402 },
+    );
   }
 
   // ── 6. Override contact email with auth email (prevents spoofing) ──────────
@@ -144,16 +138,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Persist initial state
   await saveSession(state);
 
+  // ── 7. Admin notification (fire-and-forget) ────────────────────────────────
+  sendNewRequestNotification(intakeData, sessionId, env).catch((err) =>
+    console.error("Admin notification failed:", err),
+  );
+
   // ── Execute the graph ─────────────────────────────────────────────────────
   try {
     const result = await executeGraph(state, env);
 
-    // Post-success bookkeeping
-    if (!demoUsed) {
-      await markDemoUsed(email);
-    } else {
-      await deductCredit(email);
-    }
+    // Deduct credit on success
+    await deductCredit(email);
 
     return NextResponse.json(result, {
       headers: { "Cache-Control": "no-store" },

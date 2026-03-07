@@ -38,18 +38,11 @@ export default async function SignUpPage() {
           </span>
         </a>
 
-        {/* Demo badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-orange/20 bg-orange/5 text-sm text-orange mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-orange animate-pulse" />
-          Free Demo &mdash; 1 Project
-        </div>
-
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
           Create your <span className="text-gradient-sun">account</span>
         </h1>
         <p className="text-foreground/50 mb-10 max-w-sm mx-auto">
-          Sign up to get started. Your first project is free &mdash;
-          no credit card required.
+          Sign up to get started with AI-powered website generation.
         </p>
 
         {/* Registration form */}

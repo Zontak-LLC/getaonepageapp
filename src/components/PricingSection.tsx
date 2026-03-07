@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
 import { useInView } from "@/hooks/useInView";
 import { PricingButton } from "@/components/PricingButton";
 
@@ -259,52 +258,6 @@ function ComplexityCalculator() {
   );
 }
 
-/* ─── Free Demo Banner ─────────────────────────────────────────── */
-
-function FreeDemoBanner() {
-  const { data: session } = useSession();
-  const { ref, isInView } = useInView();
-
-  return (
-    <div
-      ref={ref}
-      className={`max-w-2xl mx-auto mb-16 p-8 rounded-2xl border border-orange/30 bg-orange/[0.03] sun-glow-orange text-center transition-opacity ${
-        isInView ? "animate-fade-in-up" : "opacity-0"
-      }`}
-    >
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-orange/20 bg-orange/10 text-sm text-orange mb-6">
-        <span className="w-1.5 h-1.5 rounded-full bg-orange animate-pulse" />
-        Free Demo Available
-      </div>
-      <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
-        Try it for <span className="text-gradient-sun">free</span>
-      </h3>
-      <p className="text-foreground/50 max-w-md mx-auto mb-8">
-        Sign up and submit one free project brief. Our AI pipeline
-        will build your site &mdash; no credit card required.
-      </p>
-      {session?.user ? (
-        <a
-          href="/welcome"
-          className="inline-block px-8 py-4 bg-orange text-warm-black font-semibold rounded-full text-lg hover:bg-orange-dark hover:shadow-[0_0_40px_rgba(240,125,46,0.3)] transition-all"
-        >
-          Submit Your Free Brief
-        </a>
-      ) : (
-        <a
-          href="/auth/signin?callbackUrl=/welcome"
-          className="inline-block px-8 py-4 bg-orange text-warm-black font-semibold rounded-full text-lg hover:bg-orange-dark hover:shadow-[0_0_40px_rgba(240,125,46,0.3)] transition-all"
-        >
-          Sign in &amp; Build Free
-        </a>
-      )}
-      <p className="mt-4 text-xs text-foreground/30">
-        1 free project per account. No payment required.
-      </p>
-    </div>
-  );
-}
-
 /* ─── Tier Card ─────────────────────────────────────────────── */
 
 function TierCardComponent({
@@ -394,9 +347,6 @@ export function PricingSection() {
 
         {/* Complexity calculator */}
         <ComplexityCalculator />
-
-        {/* Free demo banner */}
-        <FreeDemoBanner />
 
         {/* Tier cards */}
         <div className="grid md:grid-cols-3 gap-6">
