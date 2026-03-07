@@ -1,15 +1,16 @@
 /**
- * KV state management for the Attractor execution model.
+ * Postgres state management for the Attractor execution model.
  *
- * Two namespaces:
- *   session:{sessionId}  →  ExecutionState  (TTL: 30 days)
- *   credits:{email}      →  CreditRecord    (no TTL — permanent record)
+ * Three tables (via Prisma):
+ *   execution_sessions  →  ExecutionState  (with expiresAt for TTL)
+ *   credit_records      →  CreditRecord    (permanent)
+ *   users               →  UserRecord      (handled by user-store.ts)
  *
- * Uses a minimal KVStore interface compatible with @vercel/kv (and any
- * Redis-like store). Configure Vercel KV in the dashboard and pass the
- * imported `kv` client from @vercel/kv as INTAKE_KV in GraphEnv.
+ * Uses Prisma client singleton from @/lib/prisma — no more KVStore interface.
  */
 
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import type {
   ExecutionState,
   CreditRecord,
@@ -18,42 +19,53 @@ import type {
 } from "./graph-types";
 import {
   CREDITS_INCLUDED,
-  CREDITS_KV_PREFIX,
-  SESSION_KV_PREFIX,
   SESSION_TTL_SECONDS,
 } from "./graph-types";
-
-/**
- * Minimal KV store interface — compatible with @vercel/kv.
- * `get` returns parsed JSON directly; `set` accepts native objects.
- */
-export interface KVStore {
-  get<T = unknown>(key: string): Promise<T | null>;
-  set(key: string, value: unknown, options?: { ex?: number }): Promise<unknown>;
-}
 
 /* ─── Session CRUD ─── */
 
 export async function loadSession(
   sessionId: string,
-  kv: KVStore,
 ): Promise<ExecutionState | null> {
-  return kv.get<ExecutionState>(`${SESSION_KV_PREFIX}${sessionId}`);
+  const row = await prisma.executionSession.findUnique({
+    where: { sessionId },
+  });
+
+  if (!row) return null;
+
+  // Check TTL — treat expired sessions as not found
+  if (row.expiresAt < new Date()) return null;
+
+  return row.data as unknown as ExecutionState;
 }
 
 export async function saveSession(
   state: ExecutionState,
-  kv: KVStore,
 ): Promise<void> {
   const updated: ExecutionState = {
     ...state,
     updatedAt: new Date().toISOString(),
   };
-  await kv.set(
-    `${SESSION_KV_PREFIX}${state.sessionId}`,
-    updated,
-    { ex: SESSION_TTL_SECONDS },
-  );
+
+  const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
+
+  // Extract user email from intake data for indexing
+  const userEmail = state.context?.intakeData?.contact?.email ?? "";
+
+  await prisma.executionSession.upsert({
+    where: { sessionId: state.sessionId },
+    update: {
+      data: JSON.parse(JSON.stringify(updated)) as Prisma.InputJsonValue,
+      userEmail,
+      expiresAt,
+    },
+    create: {
+      sessionId: state.sessionId,
+      data: JSON.parse(JSON.stringify(updated)) as Prisma.InputJsonValue,
+      userEmail,
+      expiresAt,
+    },
+  });
 }
 
 export function createSession(
@@ -76,19 +88,42 @@ export function createSession(
 
 export async function loadCredits(
   email: string,
-  kv: KVStore,
 ): Promise<CreditRecord | null> {
-  return kv.get<CreditRecord>(`${CREDITS_KV_PREFIX}${email}`);
+  const row = await prisma.creditRecord.findUnique({
+    where: { email: email.toLowerCase().trim() },
+  });
+
+  if (!row) return null;
+
+  return {
+    email: row.email,
+    total: row.total,
+    used: row.used,
+    plan: row.plan as CreditRecord["plan"],
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
 export async function saveCredits(
   record: CreditRecord,
-  kv: KVStore,
 ): Promise<void> {
-  await kv.set(
-    `${CREDITS_KV_PREFIX}${record.email}`,
-    { ...record, updatedAt: new Date().toISOString() },
-  );
+  const email = record.email.toLowerCase().trim();
+
+  await prisma.creditRecord.upsert({
+    where: { email },
+    update: {
+      total: record.total,
+      used: record.used,
+      plan: record.plan,
+    },
+    create: {
+      email,
+      total: record.total,
+      used: record.used,
+      plan: record.plan,
+    },
+  });
 }
 
 /**
@@ -97,22 +132,28 @@ export async function saveCredits(
  */
 export async function getOrCreateCredits(
   email: string,
-  kv: KVStore,
 ): Promise<CreditRecord> {
-  const existing = await loadCredits(email, kv);
-  if (existing) return existing;
+  const normalizedEmail = email.toLowerCase().trim();
 
-  const now = new Date().toISOString();
-  const record: CreditRecord = {
-    email,
-    total: CREDITS_INCLUDED,
-    used: 0,
-    plan: "standard",
-    createdAt: now,
-    updatedAt: now,
+  const row = await prisma.creditRecord.upsert({
+    where: { email: normalizedEmail },
+    update: {}, // no-op if exists
+    create: {
+      email: normalizedEmail,
+      total: CREDITS_INCLUDED,
+      used: 0,
+      plan: "standard",
+    },
+  });
+
+  return {
+    email: row.email,
+    total: row.total,
+    used: row.used,
+    plan: row.plan as CreditRecord["plan"],
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
-  await saveCredits(record, kv);
-  return record;
 }
 
 /**
@@ -122,16 +163,26 @@ export async function getOrCreateCredits(
  */
 export async function deductCredit(
   email: string,
-  kv: KVStore,
 ): Promise<CreditRecord> {
-  const record = await getOrCreateCredits(email, kv);
+  const record = await getOrCreateCredits(email);
   const remaining = record.total - record.used;
   if (remaining <= 0) {
     throw new Error("No credits remaining");
   }
-  const updated: CreditRecord = { ...record, used: record.used + 1 };
-  await saveCredits(updated, kv);
-  return updated;
+
+  const row = await prisma.creditRecord.update({
+    where: { email: email.toLowerCase().trim() },
+    data: { used: { increment: 1 } },
+  });
+
+  return {
+    email: row.email,
+    total: row.total,
+    used: row.used,
+    plan: row.plan as CreditRecord["plan"],
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
 export function creditsRemaining(record: CreditRecord): number {

@@ -5,7 +5,7 @@
  * On checkout.session.completed:
  *   1. Verify signature
  *   2. Extract customer email + tier from metadata
- *   3. Provision credits in KV (Upstash Redis)
+ *   3. Provision credits in Postgres (Prisma)
  *   4. Send welcome email + team notification via Resend
  *   5. Always return 200 (prevent Stripe retry storms)
  *
@@ -24,7 +24,6 @@ import Stripe from "stripe";
 import { CREDITS_INCLUDED } from "@/lib/graph-types";
 import type { CreditRecord } from "@/lib/graph-types";
 import { loadCredits, saveCredits } from "@/lib/graph-state";
-import type { KVStore } from "@/lib/graph-state";
 import { buildPaymentWelcomeEmail } from "@/emails/payment-welcome";
 import { buildPaymentNotificationEmail } from "@/emails/payment-notification";
 
@@ -106,48 +105,36 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // ── Provision credits in KV ──────────────────────────────────────────────
-  const kvConfigured = !!(
-    process.env.UPSTASH_REDIS_REST_URL &&
-    process.env.UPSTASH_REDIS_REST_TOKEN
-  );
+  // ── Provision credits in Postgres ─────────────────────────────────────────
+  const existing = await loadCredits(customerEmail);
+  const now = new Date().toISOString();
 
-  if (kvConfigured) {
-    const { Redis } = await import("@upstash/redis");
-    const kv: KVStore = Redis.fromEnv();
-
-    const existing = await loadCredits(customerEmail, kv);
-    const now = new Date().toISOString();
-
-    if (existing) {
-      // Add credits to existing record
-      const updated: CreditRecord = {
-        ...existing,
-        total: existing.total + CREDITS_INCLUDED,
-        plan,
-        updatedAt: now,
-      };
-      await saveCredits(updated, kv);
-      console.log(
-        `[stripe-webhook] Added ${CREDITS_INCLUDED} credits to ${customerEmail} (total: ${updated.total})`,
-      );
-    } else {
-      // Create new record
-      const record: CreditRecord = {
-        email: customerEmail,
-        total: CREDITS_INCLUDED,
-        used: 0,
-        plan,
-        createdAt: now,
-        updatedAt: now,
-      };
-      await saveCredits(record, kv);
-      console.log(
-        `[stripe-webhook] Created credit record for ${customerEmail} (${CREDITS_INCLUDED} credits)`,
-      );
-    }
+  if (existing) {
+    // Add credits to existing record
+    const updated: CreditRecord = {
+      ...existing,
+      total: existing.total + CREDITS_INCLUDED,
+      plan,
+      updatedAt: now,
+    };
+    await saveCredits(updated);
+    console.log(
+      `[stripe-webhook] Added ${CREDITS_INCLUDED} credits to ${customerEmail} (total: ${updated.total})`,
+    );
   } else {
-    console.warn("[stripe-webhook] KV not configured — credits not provisioned");
+    // Create new record
+    const record: CreditRecord = {
+      email: customerEmail,
+      total: CREDITS_INCLUDED,
+      used: 0,
+      plan,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await saveCredits(record);
+    console.log(
+      `[stripe-webhook] Created credit record for ${customerEmail} (${CREDITS_INCLUDED} credits)`,
+    );
   }
 
   // ── Send emails via Resend ───────────────────────────────────────────────

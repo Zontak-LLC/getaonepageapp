@@ -4,7 +4,7 @@
  * Entry point for the Attractor execution graph.
  *
  * Guard chain (executed before the expensive AI pipeline):
- *   1. Auth check — must be signed in via Google OAuth
+ *   1. Auth check — must be signed in
  *   2. Parse body
  *   3. Honeypot check — silent fake-200 if bot fills hidden field
  *   4. Rate limit — 5 requests per hour per email
@@ -98,25 +98,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   // ── 5. Demo / credit check ─────────────────────────────────────────────────
-  // Build KV client early (needed for credit checks)
-  const kvConfigured = !!(
-    process.env.UPSTASH_REDIS_REST_URL &&
-    process.env.UPSTASH_REDIS_REST_TOKEN
-  );
-
-  let kvClient: GraphEnv["INTAKE_KV"] = undefined;
-  if (kvConfigured) {
-    const { Redis } = await import("@upstash/redis");
-    kvClient = Redis.fromEnv();
-  }
-
   const demoUsed = await hasDemoBeenUsed(email);
 
   if (!demoUsed) {
     // First submission is free — will mark demo used after success
-  } else if (kvClient) {
+  } else {
     // Check paid credits
-    const credits = await getOrCreateCredits(email, kvClient);
+    const credits = await getOrCreateCredits(email);
     if (credits.total - credits.used <= 0) {
       return NextResponse.json(
         {
@@ -127,16 +115,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 402 },
       );
     }
-  } else {
-    // No KV configured and demo already used — can't verify credits
-    return NextResponse.json(
-      {
-        error: "No credits remaining. Purchase a plan to continue.",
-        code: "NO_CREDITS",
-        creditsRemaining: 0,
-      },
-      { status: 402 },
-    );
   }
 
   // ── 6. Override contact email with auth email (prevents spoofing) ──────────
@@ -159,15 +137,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NOTIFY_EMAIL: process.env.NOTIFY_EMAIL,
     FROM_EMAIL: process.env.FROM_EMAIL,
-    INTAKE_KV: kvClient,
     CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
     CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
   };
 
   // Persist initial state
-  if (env.INTAKE_KV) {
-    await saveSession(state, env.INTAKE_KV);
-  }
+  await saveSession(state);
 
   // ── Execute the graph ─────────────────────────────────────────────────────
   try {
@@ -176,8 +151,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Post-success bookkeeping
     if (!demoUsed) {
       await markDemoUsed(email);
-    } else if (kvClient) {
-      await deductCredit(email, kvClient);
+    } else {
+      await deductCredit(email);
     }
 
     return NextResponse.json(result, {

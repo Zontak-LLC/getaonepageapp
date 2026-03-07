@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
-import { Redis } from "@upstash/redis";
 import { findUser, createUser } from "@/lib/user-store";
 
 /**
@@ -42,8 +41,7 @@ export async function POST(request: NextRequest) {
   }
 
   // ── Check for existing user ──
-  const kv = Redis.fromEnv();
-  const existing = await findUser(email, kv);
+  const existing = await findUser(email);
   if (existing) {
     return NextResponse.json(
       { error: "An account with this email already exists." },
@@ -53,15 +51,7 @@ export async function POST(request: NextRequest) {
 
   // ── Hash password & store ──
   const passwordHash = await hash(password, 12);
-  await createUser(
-    {
-      email,
-      name,
-      passwordHash,
-      createdAt: new Date().toISOString(),
-    },
-    kv,
-  );
+  await createUser({ email, name, passwordHash });
 
   return NextResponse.json({ ok: true });
 }

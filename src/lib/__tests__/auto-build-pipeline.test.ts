@@ -30,6 +30,35 @@ vi.mock("@/lib/cloudflare-deploy", async (importOriginal) => {
   };
 });
 
+// Mock Prisma-based graph-state functions to avoid database calls in tests.
+// createSession and creditsRemaining are pure functions — keep them real.
+vi.mock("@/lib/graph-state", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/graph-state")>();
+  return {
+    ...actual,
+    saveSession: vi.fn().mockResolvedValue(undefined),
+    loadSession: vi.fn().mockResolvedValue(null),
+    loadCredits: vi.fn().mockResolvedValue(null),
+    saveCredits: vi.fn().mockResolvedValue(undefined),
+    getOrCreateCredits: vi.fn().mockResolvedValue({
+      email: "test@example.com",
+      total: 3,
+      used: 0,
+      plan: "standard",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    deductCredit: vi.fn().mockResolvedValue({
+      email: "test@example.com",
+      total: 3,
+      used: 1,
+      plan: "standard",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+  };
+});
+
 /* ─── Test Fixtures ─── */
 
 function makeIntakeData(overrides?: Partial<ProjectIntakeData>): ProjectIntakeData {

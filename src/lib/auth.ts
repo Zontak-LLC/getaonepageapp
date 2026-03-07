@@ -1,8 +1,27 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
-import { Redis } from "@upstash/redis";
 import { findUser } from "@/lib/user-store";
+
+declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -18,8 +37,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!email || !password) return null;
 
-        const kv = Redis.fromEnv();
-        const user = await findUser(email, kv);
+        const user = await findUser(email);
         if (!user) return null;
 
         const valid = await compare(password, user.passwordHash);
@@ -29,6 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: email,
           email: user.email,
           name: user.name,
+          role: user.role,
         };
       },
     }),
@@ -43,6 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.name = user.name;
         token.email = user.email;
+        token.role = user.role ?? "user";
       }
       return token;
     },
@@ -55,6 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       // Use email as user ID — downstream code keys on session.user.email
       session.user.id = (token.email as string) ?? "";
+      session.user.role = (token.role as string) ?? "user";
       return session;
     },
   },

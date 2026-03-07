@@ -4,7 +4,7 @@
  * Implements the four core properties:
  *   Deterministic — same inputs produce the same graph traversal
  *   Observable    — every node transition is logged with timestamp + duration
- *   Resumable     — state is persisted to KV after every transition
+ *   Resumable     — state is persisted to Postgres after every transition
  *   Composable    — executeGraph() is a pure async function; embeddable in larger graphs
  *
  * Graph topology (8 nodes):
@@ -37,7 +37,6 @@ import {
   getOrCreateCredits,
   deductCredit,
   creditsRemaining,
-  type KVStore,
 } from "./graph-state";
 import {
   NODE_PROMPTS,
@@ -59,7 +58,6 @@ export interface GraphEnv {
   RESEND_API_KEY?: string;
   NOTIFY_EMAIL?: string;
   FROM_EMAIL?: string;
-  INTAKE_KV?: KVStore;
   CLOUDFLARE_API_TOKEN?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
 }
@@ -105,9 +103,7 @@ export async function executeGraph(
       state.currentNode = nextNode;
 
       // Persist after every transition (Resumable)
-      if (env.INTAKE_KV) {
-        await saveSession(state, env.INTAKE_KV);
-      }
+      await saveSession(state);
     }
 
     // ── Deliver node ─────────────────────────────────────────────────────────
@@ -124,17 +120,13 @@ export async function executeGraph(
     state.context.delivery = deliverOutput;
     state.status = "completed";
 
-    if (env.INTAKE_KV) {
-      await saveSession(state, env.INTAKE_KV);
-    }
+    await saveSession(state);
 
     return buildResult(state);
   } catch (err) {
     state.status = "failed";
     state.error = err instanceof Error ? err.message : String(err);
-    if (env.INTAKE_KV) {
-      await saveSession(state, env.INTAKE_KV).catch(() => undefined);
-    }
+    await saveSession(state).catch(() => undefined);
     throw err;
   }
 }
@@ -295,21 +287,21 @@ async function executeDeliverNode(
   const siteUrl = context.deployment?.deploymentUrl || undefined;
 
   // ── Credits ────────────────────────────────────────────────────────────────
-  let remaining = 3; // default if KV not configured
-  if (env.INTAKE_KV && email) {
+  let remaining = 3; // default if no email
+  if (email) {
     if (context.iterationCount > 0) {
       // Revisions cost a credit; first submission is always free
       try {
-        const record = await deductCredit(email, env.INTAKE_KV);
+        const record = await deductCredit(email);
         remaining = creditsRemaining(record);
       } catch {
         // No credits remaining — log but still deliver (enforcement in V2)
         console.warn(`No credits for ${email} — delivering anyway (credit enforcement pending)`);
-        const record = await getOrCreateCredits(email, env.INTAKE_KV);
+        const record = await getOrCreateCredits(email);
         remaining = creditsRemaining(record);
       }
     } else {
-      const record = await getOrCreateCredits(email, env.INTAKE_KV);
+      const record = await getOrCreateCredits(email);
       remaining = creditsRemaining(record);
     }
   }
