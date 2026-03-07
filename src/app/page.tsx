@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ProjectIntakeForm } from "@/components/project-intake";
+import { ChatAgent } from "@/components/chat-agent";
 import { AuthButton } from "@/components/AuthButton";
 import { PricingButton } from "@/components/PricingButton";
 import { PricingSection } from "@/components/PricingSection";
@@ -110,7 +110,7 @@ export default function Home() {
           </h1>
 
           <p className="text-xl md:text-2xl text-foreground/60 mb-4 font-light">
-            Full service: <span className="text-orange">build</span> &middot;{" "}
+            Full service: <span className="text-orange">create</span> &middot;{" "}
             <span className="text-blue">deploy</span> &middot;{" "}
             <span className="text-gold">maintain</span>
           </p>
@@ -168,9 +168,9 @@ export default function Home() {
           {/* Process steps */}
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: "01", title: "Describe", text: "Fill out our project intake form with your business details and style preferences." },
-              { step: "02", title: "Build", text: "We design and develop your one-page app with AI-first tooling." },
-              { step: "03", title: "Launch", text: "Deployed to Cloudflare with your custom domain, SSL, and hosting." },
+              { step: "01", title: "Chat", text: "Talk with our agent about your business. It asks the right questions and builds your spec." },
+              { step: "02", title: "Build", text: "Approve the spec and our AI builds your one-page site in seconds." },
+              { step: "03", title: "Launch", text: "Deployed to Vercel with your custom domain, SSL, and hosting." },
             ].map((item) => (
               <div key={item.step} className="group relative p-8 rounded-2xl border border-orange/10 bg-warm-gray/30 hover:border-orange/30 transition-all">
                 <div className="text-5xl font-bold text-orange/10 group-hover:text-orange/20 transition-colors mb-4">{item.step}</div>
@@ -267,8 +267,24 @@ export default function Home() {
       {/* ─── Divider ─── */}
       <div className="divider-sun" />
 
-      {/* ─── Contact / Project Intake ─── */}
-      <ProjectIntakeForm />
+      {/* ─── Contact / Chat Agent ─── */}
+      <section id="contact" className="relative py-32 px-6">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-orange/5 blur-3xl" />
+        </div>
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-orange uppercase tracking-[0.3em] text-sm font-medium mb-4">Start Building</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Tell Us About Your <span className="text-gradient-sun">Project</span>
+            </h2>
+            <p className="text-foreground/50 text-lg max-w-xl mx-auto">
+              Chat with our agent to define your site. Once you approve the spec, we&apos;ll build and deploy it automatically.
+            </p>
+          </div>
+          <ChatAgent />
+        </div>
+      </section>
 
       {/* ─── Footer ─── */}
       <footer className="border-t border-orange/10 py-12 px-6">

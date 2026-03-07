@@ -10,7 +10,7 @@
  */
 
 import type { ProjectIntakeData } from "./intake-types";
-import type { GenerateOutput, ValidateOutput } from "./graph-types";
+import type { GenerateOutput, ValidateOutput } from "./chat-types";
 
 /* ─── Team notification ─── */
 
@@ -58,7 +58,7 @@ export function teamEmailHtml(
           🚀 Auto-Built Site
         </p>
         <a href="${siteUrl}" style="color:#3DA7DB;font-size:16px;font-weight:600;text-decoration:none">${siteUrl}</a>
-        <p style="color:#888;font-size:12px;margin:8px 0 0">Deployed automatically to Cloudflare Pages</p>
+        <p style="color:#888;font-size:12px;margin:8px 0 0">Deployed automatically to Vercel</p>
       </div>`
     : "";
 

@@ -57,49 +57,19 @@ export interface NodeClassification {
  */
 const NODE_CLASSIFICATIONS: Record<string, NodeClassification> = {
 
-  assess: {
-    model: "haiku",
-    modelId: MODEL_IDS.haiku,
-    confidence: 0.95,
-    scores: {
-      complexity: 2,        // Evaluate 5 checklist items
-      reasoning_depth: 2,   // Pattern matching against criteria
-      domain_specificity: 2, // General business brief knowledge
-      ambiguity: 1,         // Clear instructions, rigid output schema
-      stakes: 1,            // Advisory only — doesn't block pipeline
-    },
-    average: 1.6,
-    reasoning: "Assessment is a checklist evaluation with rigid JSON output. Low stakes since it's advisory-only (always routes forward). Haiku handles structured scoring well.",
-  },
-
-  generate: {
+  spec_agent: {
     model: "sonnet",
     modelId: MODEL_IDS.sonnet,
-    confidence: 0.85,
+    confidence: 0.90,
     scores: {
-      complexity: 3,        // Dual output: polished prose + structured spec
-      reasoning_depth: 3,   // Needs to infer missing details, write persuasive copy
-      domain_specificity: 3, // Web strategy + copywriting knowledge
-      ambiguity: 3,         // Must fill gaps in vague briefs
-      stakes: 4,            // Core output that clients see — quality matters
+      complexity: 3,        // Multi-turn conversation, structured extraction
+      reasoning_depth: 4,   // Must infer missing info, ask right follow-ups
+      domain_specificity: 3, // Web strategy + business intake knowledge
+      ambiguity: 4,         // Open-ended conversation, must guide to completion
+      stakes: 4,            // Quality of spec determines build quality
     },
-    average: 3.2,
-    reasoning: "Generate requires creative writing, gap-filling, and structured site architecture in a single call. Stakes are high since this is the client-visible output. Sonnet balances quality and cost.",
-  },
-
-  validate: {
-    model: "haiku",
-    modelId: MODEL_IDS.haiku,
-    confidence: 0.80,
-    scores: {
-      complexity: 2,        // Score 4 dimensions, compute average
-      reasoning_depth: 3,   // Judgment on quality dimensions
-      domain_specificity: 2, // General web quality assessment
-      ambiguity: 1,         // Clear rubric, rigid output schema
-      stakes: 3,            // Gates retry loop — but circuit breaker limits damage
-    },
-    average: 2.2,
-    reasoning: "Validation is structured scoring against a clear rubric. The circuit breaker (max 2 attempts) limits the cost of a wrong score. Haiku can handle dimensional scoring with the detailed rubric provided.",
+    average: 3.6,
+    reasoning: "Spec agent runs a multi-turn conversation to gather site requirements. Needs Sonnet for creative follow-ups and structured data extraction from natural language.",
   },
 
   build: {

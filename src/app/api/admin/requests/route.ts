@@ -10,8 +10,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { ExecutionState } from "@/lib/graph-types";
 import type { Prisma } from "@prisma/client";
+
+/** Legacy type for reading old ExecutionSession JSON data */
+interface ExecutionState {
+  status?: string;
+  currentNode?: string;
+  context?: {
+    intakeData?: {
+      business?: { businessName?: string; industry?: string };
+      contact?: { email?: string };
+    };
+    assessment?: { qualityScore?: number };
+    validation?: { overallScore?: number };
+    deployment?: { deploymentUrl?: string };
+  };
+  history?: unknown[];
+}
 
 function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });

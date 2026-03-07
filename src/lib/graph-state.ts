@@ -1,88 +1,13 @@
 /**
- * Postgres state management for the Attractor execution model.
+ * Credit management for the build pipeline.
  *
- * Three tables (via Prisma):
- *   execution_sessions  →  ExecutionState  (with expiresAt for TTL)
- *   credit_records      →  CreditRecord    (permanent)
- *   users               →  UserRecord      (handled by user-store.ts)
- *
- * Uses Prisma client singleton from @/lib/prisma — no more KVStore interface.
+ * Uses Prisma credit_records table to track per-user credit allocation
+ * and usage. Credits are deducted on revisions (iteration > 0).
  */
 
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
-import type {
-  ExecutionState,
-  CreditRecord,
-  NodeId,
-  SessionContext,
-} from "./graph-types";
-import {
-  CREDITS_INCLUDED,
-  SESSION_TTL_SECONDS,
-} from "./graph-types";
-
-/* ─── Session CRUD ─── */
-
-export async function loadSession(
-  sessionId: string,
-): Promise<ExecutionState | null> {
-  const row = await prisma.executionSession.findUnique({
-    where: { sessionId },
-  });
-
-  if (!row) return null;
-
-  // Check TTL — treat expired sessions as not found
-  if (row.expiresAt < new Date()) return null;
-
-  return row.data as unknown as ExecutionState;
-}
-
-export async function saveSession(
-  state: ExecutionState,
-): Promise<void> {
-  const updated: ExecutionState = {
-    ...state,
-    updatedAt: new Date().toISOString(),
-  };
-
-  const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
-
-  // Extract user email from intake data for indexing
-  const userEmail = state.context?.intakeData?.contact?.email ?? "";
-
-  await prisma.executionSession.upsert({
-    where: { sessionId: state.sessionId },
-    update: {
-      data: JSON.parse(JSON.stringify(updated)) as Prisma.InputJsonValue,
-      userEmail,
-      expiresAt,
-    },
-    create: {
-      sessionId: state.sessionId,
-      data: JSON.parse(JSON.stringify(updated)) as Prisma.InputJsonValue,
-      userEmail,
-      expiresAt,
-    },
-  });
-}
-
-export function createSession(
-  sessionId: string,
-  context: SessionContext,
-): ExecutionState {
-  const now = new Date().toISOString();
-  return {
-    sessionId,
-    currentNode: "assess" as NodeId,
-    context,
-    history: [],
-    status: "running",
-    createdAt: now,
-    updatedAt: now,
-  };
-}
+import type { CreditRecord } from "./chat-types";
+import { CREDITS_INCLUDED } from "./chat-types";
 
 /* ─── Credit CRUD ─── */
 

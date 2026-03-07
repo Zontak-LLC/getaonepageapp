@@ -43,3 +43,19 @@ model ExecutionSession {
 
   @@map("execution_sessions")
 }
+
+model ConversationSession {
+  id            String   @id @default(cuid())
+  sessionId     String   @unique @map("session_id")
+  userEmail     String   @map("user_email")
+  messages      Json     // ChatMessage[]
+  partialSpec   Json?    @map("partial_spec")
+  partialIntake Json?    @map("partial_intake")
+  specStatus    String   @default("gathering") @map("spec_status")
+  buildResult   Json?    @map("build_result")
+  expiresAt     DateTime @map("expires_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("conversation_sessions")
+}

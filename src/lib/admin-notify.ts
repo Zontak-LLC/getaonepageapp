@@ -7,14 +7,14 @@
  */
 
 import type { ProjectIntakeData } from "./intake-types";
-import type { GraphEnv } from "./graph-executor";
+import type { BuildEnv } from "./build-agent";
 
 const ADMIN_EMAIL = "dzontak@gmail.com";
 
 export async function sendNewRequestNotification(
   intake: ProjectIntakeData,
   sessionId: string,
-  env: GraphEnv,
+  env: BuildEnv,
 ): Promise<void> {
   if (!env.RESEND_API_KEY || !env.FROM_EMAIL) {
     console.warn("Resend not configured — skipping admin notification");
@@ -80,7 +80,7 @@ export async function sendNewRequestNotification(
 
   <div style="text-align:center;border-top:1px solid #2A2520;padding-top:16px">
     <span style="color:#F5EDE030;font-size:11px">
-      INTAKE → ASSESS → GENERATE → VALIDATE → BUILD → DEPLOY → DELIVER
+      CHAT → SPEC → BUILD → VALIDATE → DEPLOY → DELIVER
     </span>
   </div>
 

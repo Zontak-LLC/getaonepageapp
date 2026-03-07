@@ -1,16 +1,16 @@
 # getAOnePageApp — Technical Specification
 
-> AI-powered one-page website generation platform. Transforms a client intake form into a live `.pages.dev` site in under 60 seconds.
+> AI-powered one-page website generation platform. User chats with an AI agent to define their site, then the build pipeline generates, validates, and deploys a live `.vercel.app` site automatically.
 
 ---
 
 ## Table of Contents
 
 1. [System Overview](#system-overview)
-2. [Graph Topology](#graph-topology)
-3. [Node Reference](#node-reference)
+2. [Phase 1: Spec Agent (Chat)](#phase-1-spec-agent-chat)
+3. [Phase 2: Build Agent (Autonomous)](#phase-2-build-agent-autonomous)
 4. [Model Routing](#model-routing)
-5. [Cloudflare Deployment](#cloudflare-deployment)
+5. [Vercel Deployment](#vercel-deployment)
 6. [Email Delivery](#email-delivery)
 7. [Credit System](#credit-system)
 8. [State Persistence](#state-persistence)
@@ -26,141 +26,80 @@
 
 ## System Overview
 
-getAOnePageApp runs an 8-node AI pipeline (the **Attractor** execution engine) that:
+getAOnePageApp uses a two-phase conversational agent architecture:
 
-1. **Assesses** a client's intake brief for completeness
-2. **Generates** a polished brief + site specification
-3. **Validates** the spec against a quality rubric (with one retry)
-4. **Sanity-checks** whether the submission qualifies for auto-build
-5. **Builds** a complete single-file HTML+CSS page via Claude
-6. **Validates the HTML** for structural integrity, responsiveness, accessibility
-7. **Deploys** the page to Cloudflare Pages via Wrangler CLI
-8. **Delivers** email notifications to the team and client
+### Phase 1: Spec Agent (chat)
+User chats with an AI agent to define their site. The agent:
+1. Asks guided questions about the business and design preferences
+2. Extracts structured SiteSpec + ProjectIntakeData via comment markers
+3. Streams responses as SSE events for real-time feedback
+4. Checks completeness and offers a summary for approval
 
-If any auto-build node fails, the pipeline falls back to email-only delivery. The customer lead is never lost.
+### Phase 2: Build Agent (autonomous)
+Once the spec is approved, the build pipeline:
+1. **Builds** a complete single-file HTML+CSS page via Claude Sonnet
+2. **Validates** the HTML for quality via Claude Haiku (score >= 7 required)
+3. **Deploys** to Vercel via REST API
+4. **Delivers** email notifications to team and client
+
+If any step fails, the pipeline falls back to email-only delivery. The customer lead is never lost.
 
 ### Execution Properties
 
 | Property | Implementation |
 |---|---|
-| **Deterministic** | Same inputs produce the same graph traversal |
-| **Observable** | Every transition logged with timestamp + duration in `history[]` |
-| **Resumable** | State persisted to KV after every node transition |
-| **Composable** | `executeGraph()` is a pure async function, embeddable in larger graphs |
+| **Conversational** | Multi-turn chat gathers complete requirements before building |
+| **Observable** | Build progress streamed as SSE events |
+| **Persistent** | Chat sessions saved to ConversationSession model |
+| **Resilient** | Every build step has email-only fallback |
 
 ---
 
-## Graph Topology
+## Phase 1: Spec Agent (Chat)
 
-```
-assess → generate → validate → sanity_check → build → build_validate → deploy → deliver
-               ↑         │           │                      │               │
-               └─────────┘           │                      │               │
-              (needs_revision,       │ (skip_build)         │ (html_fails)  │ (deploy_failed)
-               attempts < 2)        └──────────────────────┴───────────────→ deliver (email-only)
-```
+### System Prompt
 
-### Edge Labels
+The spec agent guides conversation to extract:
+- **SiteSpec**: headline, subheadline, seoDescription, sections[]
+- **ProjectIntakeData**: business info, project details, style preferences, contact info
 
-| Edge | From → To | Condition |
-|---|---|---|
-| `proceed` | assess → generate | Always |
-| `generated` | generate → validate | Always |
-| `passes` | validate → sanity_check | `overallScore >= 7` |
-| `needs_revision` | validate → generate | `overallScore < 7` and `attempts < 2` |
-| `max_retries` | validate → sanity_check | `overallScore < 7` and `attempts >= 2` |
-| `auto_build` | sanity_check → build | All criteria met |
-| `skip_build` | sanity_check → deliver | Any criterion fails |
-| `built` | build → build_validate | HTML generated successfully |
-| `build_failed` | build → deliver | Claude API error (graceful fallback) |
-| `html_passes` | build_validate → deploy | `overallScore >= 7` |
-| `html_fails` | build_validate → deliver | `overallScore < 7` |
-| `deployed` | deploy → deliver | Wrangler succeeded |
-| `deploy_failed` | deploy → deliver | Wrangler error or missing env vars |
-| `done` | deliver → (terminal) | Always |
+### Comment Markers
+
+The agent embeds structured data in its response via HTML comments:
+- `<!--SPEC_UPDATE:{"headline":"..."}-->` — partial SiteSpec fields
+- `<!--INTAKE_UPDATE:{"business":{"businessName":"..."}}-->` — partial intake fields
+- `<!--OPTIONS:{"cards":[...]}-->` — structured option cards for user selection
+- `<!--SPEC_COMPLETE-->` — triggers the approval UI
+
+Markers are parsed server-side and sent as separate SSE events. They are stripped from the displayed message text.
+
+### Completeness Check
+
+Required fields before spec_complete:
+- SiteSpec: headline, subheadline, at least 3 sections
+- Intake: business name, contact email
 
 ---
 
-## Node Reference
+## Phase 2: Build Agent (Autonomous)
 
-### assess (LLM — Haiku)
-
-Evaluates the intake brief against a 5-point checklist:
-
-- Clear call-to-action
-- Business description
-- Target audience indication
-- Services/products mentioned
-- Contact information provided
-
-**Output:** `AssessOutput { qualityScore: 1-10, missingElements[], qualityNotes, edge: "proceed" }`
-
-Always routes forward — assessment is advisory, not gating.
-
-### generate (LLM — Sonnet)
-
-Produces a refined brief and complete site specification:
-
-- Polished copy with marketing tone
-- 4–7 site sections (hero → trust → offer → proof → action)
-- Each section includes `sectionName`, `purpose`, `suggestedContent`
-- Headline, subheadline, SEO description
-- Incorporates assessment feedback and retry context if applicable
-
-**Output:** `GenerateOutput { refinedBrief, siteSpec: { headline, subheadline, seoDescription, sections[] }, edge: "generated" }`
-
-### validate (LLM — Haiku)
-
-Scores the generated spec on four dimensions (each 1–10):
-
-| Dimension | What it measures |
-|---|---|
-| `clarity` | Language precision, no jargon |
-| `completeness` | All sections substantive |
-| `ctaStrength` | CTA is specific and compelling |
-| `sectionFlow` | Logical narrative progression |
-
-**Routing logic:**
-- `overallScore >= 7` → sanity_check (`passes`)
-- `overallScore < 7` and `generateAttempts < 2` → generate (`needs_revision`)
-- `overallScore < 7` and `generateAttempts >= 2` → sanity_check (`max_retries`)
-
-**Output:** `ValidateOutput { scores, overallScore, critique, suggestions[], edge }`
-
-### sanity_check (Procedural — no LLM)
-
-Gates the auto-build pipeline. Checks:
-
-- Site spec has >= 3 sections with headline + subheadline
-- Validation score >= 6
-- Recognized style preset (warm, cool, bold, earth, minimal) or valid custom hex colors
-- Business name present (used for Cloudflare project slug)
-
-**Output:** `SanityCheckOutput { qualifies: boolean, reasons[], edge: "auto_build" | "skip_build" }`
+Sequential pipeline (no DAG):
 
 ### build (LLM — Sonnet)
 
-Generates a complete single-file HTML+CSS page. The prompt specifies:
-
+Generates a complete single-file HTML+CSS page with:
 - `<!DOCTYPE html>` with embedded `<style>` tag (no external dependencies)
 - Responsive mobile-first design with CSS custom properties
 - Semantic HTML5 (`header`, `nav`, `main`, `section`, `footer`)
 - Sticky navigation with smooth-scroll anchors
-- Prominent CTA button
-- Meta tags (charset, viewport, og:title, og:description)
-- System font stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", ...`)
 - Color palette from style preferences via `resolveColors()`
-- All sections from siteSpec rendered as `<section>` elements
+- All sections from SiteSpec rendered as `<section>` elements
 
 **Token limit:** 8,192 (`BUILD_MAX_TOKENS`)
 
-**Output:** `BuildOutput { html, buildNotes, edge: "built" }`
-
-On error: falls back to deliver with `edge: "build_failed"`.
-
 ### build_validate (LLM — Haiku)
 
-QA review of the generated HTML, scoring four dimensions (each 1–10):
+QA review scoring four dimensions (each 1–10):
 
 | Dimension | What it measures |
 |---|---|
@@ -169,101 +108,66 @@ QA review of the generated HTML, scoring four dimensions (each 1–10):
 | `accessibility` | Semantic HTML, ARIA where needed, contrast |
 | `brandAlignment` | Colors match spec, all sections present |
 
-**Routing:** `overallScore >= 7` → deploy, otherwise → deliver (email-only, no retry).
+**Routing:** `overallScore >= 7` → deploy, otherwise → email-only delivery.
 
-**Output:** `BuildValidateOutput { scores, overallScore, issues[], edge }`
+### test-agent (Runtime Validator)
 
-### deploy (Wrangler CLI)
+Additional spec compliance checks (not LLM-based):
+- DOCTYPE and viewport meta tag present
+- Embedded CSS with color variables
+- All SiteSpec sections have matching `<section>` elements
+- Headline text matches spec
+- Anchor links point to valid section IDs
+- Primary color from palette used in CSS
 
-Deploys the HTML to Cloudflare Pages:
+Produces a score 0-10 based on check pass rate.
 
-1. Slugify business name → project name (lowercase, alphanumeric + hyphens, max 58 chars)
-2. Write `index.html` to a temp directory
-3. Run `npx wrangler pages deploy <dir> --project-name=<slug> --branch=main --commit-dirty=true`
-4. Parse deployment URL from stdout
-5. Clean up temp directory
+### deploy (Vercel API v13)
 
-Credentials passed via environment variables (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), never CLI args.
+REST deployment to Vercel:
+1. Slugify business name → project name
+2. POST to `https://api.vercel.com/v13/deployments` with base64-encoded `index.html`
+3. Returns deployment URL
 
-**Output:** `DeployOutput { projectName, deploymentUrl, deploymentId, edge: "deployed" }`
+### deliver (Email)
 
-On error or missing env vars: falls back to deliver with `edge: "deploy_failed"`.
-
-### deliver (Procedural — no LLM)
-
-Terminal node. Handles:
-
-- **Credit management** — first submission free, revisions cost 1 credit
-- **Team email** — internal notification with business details, spec, validation scores, auto-build badge if deployed
-- **Client email** — confirmation with refined brief, live site link (or Stripe checkout link), remaining credits
-- **Subject lines** — change based on auto-build status:
-  - Auto-built: `"Your site for {name} is live!"`
-  - Email-only: `"Your Zontak brief for {name} is ready"`
-
-**Output:** `DeliverOutput { teamEmailSent, clientEmailSent, creditsRemaining, siteUrl?, edge: "done" }`
+Terminal step:
+- Credit management (first submission free, revisions cost 1 credit)
+- Team email with business details, spec, validation scores
+- Client email with live site link or checkout CTA
+- Credits remaining count
 
 ---
 
 ## Model Routing
 
-Each graph node is statically classified using a 5-dimension scoring framework (the **ZONTAK.AI Classifier**):
-
-| Dimension | What it measures |
-|---|---|
-| `complexity` | Cognitive load of the task |
-| `reasoning_depth` | Multi-step reasoning required |
-| `domain_specificity` | Specialized knowledge needed |
-| `ambiguity` | Input interpretation difficulty |
-| `stakes` | Impact of error on end user |
-
-Scoring rules:
-- Average 1.0–2.0 → **Haiku** (fast, cheap)
-- Average 2.1–3.5 → **Sonnet** (balanced)
-- Average 3.6–5.0 → **Opus** (high-complexity)
-- Any single dimension = 5 → upgrade one tier
-
-### Per-Node Assignments
+Per-node model assignments using the ZONTAK.AI Classifier:
 
 | Node | Model | Avg Score | Rationale |
 |---|---|---|---|
-| assess | `claude-haiku-4-5-20251001` | 1.6 | Checklist evaluation, advisory only |
-| generate | `claude-sonnet-4-20250514` | 3.2 | Creative writing + gap-filling, customer-facing |
-| validate | `claude-haiku-4-5-20251001` | 2.2 | Structured rubric scoring, retry limits damage |
-| build | `claude-sonnet-4-20250514` | 4.2 | Highest-stakes node (ships to production), but Opus exceeds 60s timeout |
+| spec_agent | `claude-sonnet-4-20250514` | 3.6 | Multi-turn conversation, must infer missing info and guide |
+| build | `claude-sonnet-4-20250514` | 4.2 | Highest-stakes node, ships to production |
 | build_validate | `claude-haiku-4-5-20251001` | 2.8 | Concrete HTML review, explicit rubric, fallback mitigates risk |
-
-The `build` node would classify as Opus (avg 4.2, stakes=5) but is downgraded to Sonnet because Opus took 72s in production — over Vercel's 60s timeout. The `build_validate` gate + email-only fallback mitigate the quality risk.
 
 ---
 
-## Cloudflare Deployment
-
-### Why Wrangler over the REST API
-
-The Cloudflare Pages Direct Upload REST API has an undocumented multi-step flow (upload session → file upload → completion token → deployment) that differs from a simple multipart POST. In testing, the REST API reported successful deployment but the site returned 500 errors. Wrangler CLI abstracts the upload lifecycle correctly and is the Cloudflare-recommended approach.
+## Vercel Deployment
 
 ### Deployment Flow
 
 ```
 slugifyProjectName("Sunrise Bakery") → "sunrise-bakery"
                     ↓
-mkdtemp("/tmp/cf-deploy-XXXXXX")
+POST https://api.vercel.com/v13/deployments
+  {
+    name: "sunrise-bakery",
+    files: [{ file: "index.html", data: base64(html), encoding: "base64" }],
+    projectSettings: { framework: null },
+    target: "production"
+  }
                     ↓
-writeFile("/tmp/cf-deploy-XXXXXX/index.html", html)
-                    ↓
-execFile("npx", ["wrangler", "pages", "deploy", tmpDir,
-  "--project-name=sunrise-bakery", "--branch=main", "--commit-dirty=true"])
-                    ↓
-Parse stdout: "https://abc123.sunrise-bakery.pages.dev"
-                    ↓
-Return: { projectName: "sunrise-bakery",
-          deploymentUrl: "https://sunrise-bakery.pages.dev",
-          deploymentId: "abc123" }
-                    ↓
-rm(tmpDir, { recursive: true })
+Return: { url: "sunrise-bakery.vercel.app", id: "dpl_xxx" }
 ```
-
-**Timeout:** 30 seconds for the wrangler command.
 
 ### Slug Rules
 
@@ -356,49 +260,37 @@ All state persisted to Vercel KV (Upstash Redis) after every node transition.
 
 ## API Routes
 
-### POST `/api/submit-intake`
+### POST `/api/chat` — Streaming SSE (30s max)
 
-Full pipeline execution.
+Conversational spec gathering endpoint.
 
-**Request:**
-```json
-{
-  "data": {
-    "business": { "businessName": "...", "businessType": "...", "industry": "...", "website": "..." },
-    "project": { "description": "...", "goals": "...", "callToAction": "...", "content": "...", "imageNotes": "..." },
-    "style": { "stylePreset": "warm", "primaryColor": "", "secondaryColor": "", "styleNotes": "...", "inspirationUrls": [] },
-    "contact": { "name": "...", "email": "...", "phone": "...", "preferredContact": "email", "additionalNotes": "" }
-  },
-  "plainText": "Full formatted brief text...",
-  "iterationCount": 0
-}
-```
+**Request:** `{ "sessionId": "...", "message": "...", "selectedOption?": "..." }`
 
-**Response:**
-```json
-{
-  "sessionId": "uuid",
-  "status": "completed",
-  "enhancement": { "refinedBrief": "...", "siteSpec": { ... } },
-  "validationScore": 8.25,
-  "creditsRemaining": 3,
-  "siteUrl": "https://my-business.pages.dev",
-  "history": [
-    { "from": "assess", "to": "generate", "edge": "proceed", "timestamp": "...", "durationMs": 5200 },
-    ...
-  ]
-}
-```
+**Guard chain:** auth → rate limit (30/hr) → load/create session
 
-**Max duration:** 60 seconds (Vercel Pro).
+**SSE events:**
+- `message_delta` — streaming text chunk
+- `message_done` — complete message with clean display text
+- `spec_update` — extracted SiteSpec fields
+- `intake_update` — extracted ProjectIntakeData fields
+- `options` — structured option cards
+- `spec_complete` — spec ready for approval
+- `error` — error with message
 
-### POST `/api/refine-brief`
+### POST `/api/build` — Streaming SSE (60s max)
 
-Quick AI polish for on-form preview. Single Claude call, no graph execution.
+Autonomous build pipeline endpoint.
 
-**Request:** `{ "brief": "plain text..." }`
-**Response:** `{ "refinedBrief": "...", "siteSpec": { ... } }`
-**Max duration:** 30 seconds.
+**Request:** `{ "sessionId": "...", "spec": {...}, "intake": {...} }`
+
+**Guard chain:** auth → rate limit (5/hr) → credit check
+
+**SSE events:**
+- `phase` — build/validate/deploy/deliver status
+- `validate_result` — quality scores
+- `deploy_result` — live URL
+- `complete` — final result with siteUrl + creditsRemaining
+- `error` — with fallback to email-only
 
 ---
 
@@ -469,15 +361,8 @@ The pipeline's core invariant: **never lose the lead**. Every auto-build node ha
 
 | Variable | Purpose |
 |---|---|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API token (requires Pages:Edit scope) |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
-
-### Optional — Session Persistence
-
-| Variable | Purpose |
-|---|---|
-| `UPSTASH_REDIS_REST_URL` | Auto-set by Vercel Marketplace |
-| `UPSTASH_REDIS_REST_TOKEN` | Auto-set by Vercel Marketplace |
+| `VERCEL_TOKEN` | Vercel API token for site deployment |
+| `VERCEL_TEAM_ID` | Optional Vercel team ID |
 
 ---
 
@@ -487,22 +372,24 @@ The pipeline's core invariant: **never lose the lead**. Every auto-build node ha
 src/
 ├── app/
 │   └── api/
-│       ├── submit-intake/
-│       │   └── route.ts          # POST — full pipeline execution
-│       └── refine-brief/
-│           └── route.ts          # POST — quick AI polish
+│       ├── chat/route.ts         # POST — streaming SSE chat endpoint
+│       └── build/route.ts        # POST — streaming SSE build pipeline
 ├── lib/
-│   ├── graph-types.ts            # NodeId, EdgeLabel, all output interfaces, SessionContext, ExecutionState
-│   ├── graph-executor.ts         # executeGraph() — main orchestration engine
-│   ├── graph-nodes.ts            # NODE_PROMPTS, parsers, evaluateSanityCheck(), GRAPH_EDGES
-│   ├── graph-state.ts            # KV persistence (sessions + credits)
+│   ├── chat-types.ts             # Chat messages, SSE events, build progress, credit types
+│   ├── spec-agent.ts             # System prompt, spec/intake extraction, completeness checker
+│   ├── build-agent.ts            # Build pipeline: build → validate → deploy → deliver
+│   ├── test-agent.ts             # Runtime HTML validator (spec compliance checks)
+│   ├── vercel-deploy.ts          # Vercel API v13 deployment
+│   ├── graph-state.ts            # Credit persistence (credit functions only)
 │   ├── model-router.ts           # Per-node model classification + routing
-│   ├── cloudflare-deploy.ts      # Wrangler CLI deployment client
 │   ├── site-builder.ts           # Color preset map + resolveColors()
 │   ├── email-templates.ts        # Team + client HTML email generation
 │   ├── intake-types.ts           # Shared domain types (BusinessInfo, SiteSpec, etc.)
 │   └── __tests__/
-│       └── auto-build-pipeline.test.ts  # 10 scenario tests for full pipeline
+│       ├── spec-agent.test.ts    # 6 spec extraction + completeness scenarios
+│       ├── build-agent.test.ts   # 8 build pipeline scenarios
+│       ├── vercel-deploy.test.ts # 4 deployment + slug scenarios
+│       └── test-agent.test.ts    # 7 HTML validation scenarios
 ├── vitest.config.ts              # Test runner configuration
 └── package.json
 ```

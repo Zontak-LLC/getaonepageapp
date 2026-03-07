@@ -8,7 +8,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { ExecutionState } from "@/lib/graph-types";
+/** Legacy type for reading old ExecutionSession JSON data */
+interface ExecutionState {
+  status?: string;
+  currentNode?: string;
+  context?: {
+    intakeData?: {
+      contact?: { email?: string };
+      [key: string]: unknown;
+    };
+    plainText?: string;
+    assessment?: Record<string, unknown>;
+    enhancement?: Record<string, unknown>;
+    validation?: Record<string, unknown>;
+    sanityCheck?: Record<string, unknown>;
+    build?: { buildNotes?: string };
+    buildValidation?: Record<string, unknown>;
+    deployment?: Record<string, unknown>;
+    delivery?: Record<string, unknown>;
+  };
+  history?: unknown[];
+}
 
 export async function GET(
   _request: NextRequest,

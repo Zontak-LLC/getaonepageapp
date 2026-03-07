@@ -21,8 +21,8 @@
 
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { CREDITS_INCLUDED } from "@/lib/graph-types";
-import type { CreditRecord } from "@/lib/graph-types";
+import { CREDITS_INCLUDED } from "@/lib/chat-types";
+import type { CreditRecord } from "@/lib/chat-types";
 import { loadCredits, saveCredits } from "@/lib/graph-state";
 import { buildPaymentWelcomeEmail } from "@/emails/payment-welcome";
 import { buildPaymentNotificationEmail } from "@/emails/payment-notification";
