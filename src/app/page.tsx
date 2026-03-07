@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { ChatAgent } from "@/components/chat-agent";
-import { AuthButton } from "@/components/AuthButton";
 import { PricingButton } from "@/components/PricingButton";
 import { PricingSection } from "@/components/PricingSection";
+import { Navbar } from "@/components/Navbar";
 
 /* ─── Icon Components ─── */
 
@@ -56,31 +56,7 @@ export default function Home() {
   return (
     <div className="relative overflow-hidden">
       {/* ─── Navigation ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-warm-black/80 backdrop-blur-md border-b border-orange/10">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/zontak-logo.svg"
-              alt="Zontak Logo"
-              width={44}
-              height={44}
-              priority
-            />
-            <span className="text-xl font-bold tracking-tight">
-              <span className="text-orange">ZON</span>
-              <span className="text-blue">TAK</span>
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-foreground/70">
-            <a href="#services" className="hover:text-orange transition-colors">Services</a>
-            <a href="#portfolio" className="hover:text-orange transition-colors">Portfolio</a>
-            <a href="#pricing" className="hover:text-orange transition-colors">Pricing</a>
-            <a href="#pay" className="hover:text-orange transition-colors">Pay</a>
-            <a href="#contact" className="hover:text-orange transition-colors">Contact</a>
-          </div>
-          <AuthButton />
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ─── Hero ─── */}
       <section className="relative min-h-screen flex items-center justify-center pt-20">
@@ -109,7 +85,7 @@ export default function Home() {
             <span className="text-foreground">Websites</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-foreground/60 mb-4 font-light">
+          <p className="text-2xl md:text-3xl text-foreground/60 mb-4 font-light">
             Full service: <span className="text-orange">create</span> &middot;{" "}
             <span className="text-blue">deploy</span> &middot;{" "}
             <span className="text-gold">maintain</span>
@@ -153,12 +129,12 @@ export default function Home() {
       <section id="services" className="relative py-32 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-warm-black via-background to-warm-black opacity-50" />
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <p className="text-orange uppercase tracking-[0.3em] text-sm font-medium mb-4">What We Do</p>
+          <p className="text-orange uppercase tracking-[0.3em] text-base font-medium mb-4">What We Do</p>
           <h2 className="text-4xl md:text-5xl font-bold mb-8">
             <span className="text-foreground">AI-First </span>
             <span className="text-gradient-blue">Creative Company</span>
           </h2>
-          <p className="text-lg text-foreground/60 max-w-2xl mx-auto mb-16 leading-relaxed">
+          <p className="text-xl text-foreground/60 max-w-2xl mx-auto mb-16 leading-relaxed">
             We build beautiful, fast single-page applications for small businesses.
             You describe your project — our AI-powered workflow delivers a
             production-ready site deployed on Cloudflare. No templates. No bloat.
@@ -174,8 +150,8 @@ export default function Home() {
             ].map((item) => (
               <div key={item.step} className="group relative p-8 rounded-2xl border border-orange/10 bg-warm-gray/30 hover:border-orange/30 transition-all">
                 <div className="text-5xl font-bold text-orange/10 group-hover:text-orange/20 transition-colors mb-4">{item.step}</div>
-                <h3 className="text-xl font-bold text-foreground mb-2">{item.title}</h3>
-                <p className="text-foreground/50 text-sm leading-relaxed">{item.text}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-2">{item.title}</h3>
+                <p className="text-foreground/50 text-base leading-relaxed">{item.text}</p>
               </div>
             ))}
           </div>
@@ -193,11 +169,11 @@ export default function Home() {
 
         <div className="relative z-10 max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-orange uppercase tracking-[0.3em] text-sm font-medium mb-4">Our Work</p>
+            <p className="text-orange uppercase tracking-[0.3em] text-base font-medium mb-4">Our Work</p>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Sites We&apos;ve <span className="text-gradient-sun">Built</span>
             </h2>
-            <p className="text-foreground/50 text-lg">When we build a site for you, we become friends.</p>
+            <p className="text-foreground/50 text-xl">When we build a site for you, we become friends.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -215,8 +191,8 @@ export default function Home() {
                     {p.name}
                   </h3>
                 </div>
-                <p className="text-foreground/50 text-sm leading-relaxed mb-4">{p.desc}</p>
-                <span className="text-blue text-sm font-mono group-hover:underline">
+                <p className="text-foreground/50 text-base leading-relaxed mb-4">{p.desc}</p>
+                <span className="text-blue text-base font-mono group-hover:underline">
                   {p.url.replace("https://", "")} &rarr;
                 </span>
               </a>
@@ -241,11 +217,11 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-xl mx-auto text-center">
-          <p className="text-orange uppercase tracking-[0.3em] text-sm font-medium mb-4">Payment</p>
+          <p className="text-orange uppercase tracking-[0.3em] text-base font-medium mb-4">Payment</p>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Pay for Your <span className="text-gradient-sun">Site</span>
           </h2>
-          <p className="text-foreground/50 text-lg mb-12">
+          <p className="text-foreground/50 text-xl mb-12">
             One payment per project. Build, deploy, hosting, and SSL included.
           </p>
 
@@ -255,7 +231,7 @@ export default function Home() {
           </div>
 
           {/* Stripe trust badge */}
-          <div className="mt-6 flex items-center justify-center gap-2 text-foreground/25 text-xs">
+          <div className="mt-6 flex items-center justify-center gap-2 text-foreground/25 text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
@@ -274,11 +250,11 @@ export default function Home() {
         </div>
         <div className="relative z-10 max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-orange uppercase tracking-[0.3em] text-sm font-medium mb-4">Start Building</p>
+            <p className="text-orange uppercase tracking-[0.3em] text-base font-medium mb-4">Start Building</p>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Tell Us About Your <span className="text-gradient-sun">Project</span>
             </h2>
-            <p className="text-foreground/50 text-lg max-w-xl mx-auto">
+            <p className="text-foreground/50 text-xl max-w-xl mx-auto">
               Chat with our agent to define your site. Once you approve the spec, we&apos;ll build and deploy it automatically.
             </p>
           </div>
@@ -296,13 +272,13 @@ export default function Home() {
               width={32}
               height={32}
             />
-            <span className="font-semibold text-sm">
+            <span className="font-semibold text-base">
               <span className="text-orange">ZON</span>
               <span className="text-blue">TAK</span>
               <span className="text-foreground/30 ml-2">AI First Creative Company</span>
             </span>
           </div>
-          <p className="text-foreground/30 text-sm">
+          <p className="text-foreground/30 text-base">
             &copy; {new Date().getFullYear()} Zontak LLC. All rights reserved.
           </p>
         </div>

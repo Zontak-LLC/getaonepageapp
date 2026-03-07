@@ -1,41 +1,52 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0D0B08;
-  --foreground: #F5EDE0;
-  --orange: #F07D2E;
-  --orange-light: #F9A825;
-  --orange-dark: #D4651A;
-  --blue: #3DA7DB;
-  --blue-light: #5EC4F0;
-  --blue-dark: #2B7FA8;
-  --gold: #FFB347;
-  --cream: #FFF8EE;
-  --warm-black: #1A1510;
-  --warm-gray: #2A2520;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-orange: var(--orange);
-  --color-orange-light: var(--orange-light);
-  --color-orange-dark: var(--orange-dark);
-  --color-blue: var(--blue);
-  --color-blue-light: var(--blue-light);
-  --color-blue-dark: var(--blue-dark);
-  --color-gold: var(--gold);
-  --color-cream: var(--cream);
-  --color-warm-black: var(--warm-black);
-  --color-warm-gray: var(--warm-gray);
+@theme {
+  --color-background: #0D0B08;
+  --color-foreground: #F5EDE0;
+  --color-orange: #F07D2E;
+  --color-orange-light: #F9A825;
+  --color-orange-dark: #D4651A;
+  --color-blue: #3DA7DB;
+  --color-blue-light: #5EC4F0;
+  --color-blue-dark: #2B7FA8;
+  --color-gold: #FFB347;
+  --color-cream: #FFF8EE;
+  --color-warm-black: #1A1510;
+  --color-warm-gray: #2A2520;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ── Light theme overrides ── */
+html.light {
+  --color-background: #FAF8F5;
+  --color-foreground: #1A1510;
+  --color-orange: #D4651A;
+  --color-orange-light: #E07B2E;
+  --color-orange-dark: #B5520F;
+  --color-blue: #2B7FA8;
+  --color-blue-light: #3DA7DB;
+  --color-blue-dark: #1E6080;
+  --color-gold: #D4900A;
+  --color-cream: #FFF8EE;
+  --color-warm-black: #F0EDE8;
+  --color-warm-gray: #E0DCD6;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+html.light * {
+  scrollbar-color: #ccc transparent;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sun ray animation */
@@ -125,14 +136,28 @@ body {
 
 /* Gradient text utility */
 .text-gradient-sun {
-  background: linear-gradient(135deg, var(--orange) 0%, var(--gold) 50%, var(--orange-light) 100%);
+  background: linear-gradient(135deg, #F07D2E 0%, #FFB347 50%, #F9A825 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+html.light .text-gradient-sun {
+  background: linear-gradient(135deg, #B5520F 0%, #D4651A 50%, #E07B2E 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-blue {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+  background: linear-gradient(135deg, #3DA7DB 0%, #5EC4F0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+html.light .text-gradient-blue {
+  background: linear-gradient(135deg, #1E6080 0%, #2B7FA8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -146,7 +171,11 @@ html {
 /* Section divider */
 .divider-sun {
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--orange) 20%, var(--gold) 50%, var(--orange) 80%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, #F07D2E 20%, #FFB347 50%, #F07D2E 80%, transparent 100%);
+}
+
+html.light .divider-sun {
+  background: linear-gradient(90deg, transparent 0%, #D4651A 20%, #D4900A 50%, #D4651A 80%, transparent 100%);
 }
 
 /* Form step transitions */
@@ -186,12 +215,18 @@ html {
     0 0 120px rgba(240, 125, 46, 0.04);
 }
 
+html.light .sun-glow-orange {
+  box-shadow:
+    0 0 60px rgba(212, 101, 26, 0.1),
+    0 0 120px rgba(212, 101, 26, 0.05);
+}
+
 /* Custom range slider track for orange theme */
 input[type="range"].slider-orange {
   -webkit-appearance: none;
   appearance: none;
   height: 6px;
-  background: var(--warm-gray);
+  background: var(--color-warm-gray);
   border-radius: 9999px;
   outline: none;
 }
@@ -201,7 +236,7 @@ input[type="range"].slider-orange::-webkit-slider-thumb {
   appearance: none;
   width: 22px;
   height: 22px;
-  background: var(--orange);
+  background: var(--color-orange);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 0 12px rgba(240, 125, 46, 0.4);
@@ -210,7 +245,7 @@ input[type="range"].slider-orange::-webkit-slider-thumb {
 input[type="range"].slider-orange::-moz-range-thumb {
   width: 22px;
   height: 22px;
-  background: var(--orange);
+  background: var(--color-orange);
   border-radius: 50%;
   border: 0;
   cursor: pointer;
