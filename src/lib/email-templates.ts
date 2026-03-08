@@ -71,7 +71,7 @@ export function teamEmailHtml(
       ${siteUrl ? "🚀" : "🔥"} ${siteUrl ? "Auto-Built Site" : "New Project Lead"}${iterBadge}${autoBuildBadge}
     </p>
     <p style="color:#666;font-size:13px;margin:0">
-      ${new Date().toLocaleString("en-US", { timeZoneName: "short" })} · via getaonepageapp.com
+      ${new Date().toLocaleString("en-US", { timeZoneName: "short" })} · via getaonepage.app
     </p>
   </div>
 
@@ -191,11 +191,11 @@ export function clientEmailHtml(
   // CTA text changes based on whether site is already built
   const ctaText = siteUrl
     ? "Get Custom Domain + Hosting →"
-    : "Get Started — from $50 →";
+    : "Get Started — $50/yr →";
 
   const ctaSubtext = siteUrl
     ? "Custom domain · SSL · Hosting · All included"
-    : "Build · Deploy · Hosting · SSL · 3 revisions included";
+    : "Annual plan · Build · Deploy · Hosting · SSL · 3 revisions";
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e0e0e0">
@@ -238,7 +238,7 @@ export function clientEmailHtml(
   </div>
 
   <div style="text-align:center;margin-bottom:32px">
-    <a href="https://getaonepageapp.com/#pricing"
+    <a href="https://getaonepage.app/#pricing"
        style="display:inline-block;background:#F07D2E;color:#0d0d0d;font-weight:700;font-size:15px;padding:16px 36px;border-radius:999px;text-decoration:none">
       ${ctaText}
     </a>
@@ -249,7 +249,7 @@ export function clientEmailHtml(
   <div style="text-align:center;padding-top:20px;border-top:1px solid #1a1a1a">
     <p style="color:#444;font-size:12px;margin:0">
       © ${new Date().getFullYear()} Zontak LLC ·
-      <a href="https://getaonepageapp.com" style="color:#F07D2E;text-decoration:none">getaonepageapp.com</a>
+      <a href="https://getaonepage.app" style="color:#F07D2E;text-decoration:none">getaonepage.app</a>
     </p>
     <p style="color:#333;font-size:12px;margin:6px 0 0">Questions? Just reply to this email.</p>
   </div>

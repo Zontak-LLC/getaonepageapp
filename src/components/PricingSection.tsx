@@ -13,7 +13,7 @@ const COMPLEXITY_LEVELS = [
     description: "Simple one-page site for a local business or personal brand.",
     sections: "3–4",
     tokenCost: "$2 – $4",
-    youPay: "$50",
+    youPay: "$50/yr",
     time: "~5 min",
     model: "HAIKU",
     modelColor: "text-emerald-400",
@@ -26,7 +26,7 @@ const COMPLEXITY_LEVELS = [
     description: "Custom styling, more sections, and SEO-optimized copy.",
     sections: "5–7",
     tokenCost: "$5 – $10",
-    youPay: "$75",
+    youPay: "$75/yr",
     time: "~12 min",
     model: "SONNET",
     modelColor: "text-blue",
@@ -39,7 +39,7 @@ const COMPLEXITY_LEVELS = [
     description: "Complex site with extensive content, custom palette, and priority build.",
     sections: "8–12",
     tokenCost: "$10 – $18",
-    youPay: "$100",
+    youPay: "$100/yr",
     time: "~20 min",
     model: "SONNET",
     modelColor: "text-blue",
@@ -100,6 +100,7 @@ type TierCard = {
   id: string;
   name: string;
   price: string;
+  period: string;
   tagline: string;
   features: string[];
   tier: "starter" | "pro" | "premium";
@@ -111,6 +112,7 @@ const TIER_CARDS: TierCard[] = [
     id: "tier-starter",
     name: "Starter",
     price: "$50",
+    period: "/year",
     tagline: "Simple one-page site for a local business or personal brand.",
     features: [
       "Single-page responsive site",
@@ -125,6 +127,7 @@ const TIER_CARDS: TierCard[] = [
     id: "tier-pro",
     name: "Pro",
     price: "$75",
+    period: "/year",
     tagline: "Custom styling, more sections, and SEO-optimized copy.",
     features: [
       "Everything in Starter",
@@ -140,6 +143,7 @@ const TIER_CARDS: TierCard[] = [
     id: "tier-premium",
     name: "Premium",
     price: "$100",
+    period: "/year",
     tagline: "Complex site with extensive content, custom palette, and priority build.",
     features: [
       "Everything in Pro",
@@ -389,6 +393,7 @@ function TierCardComponent({
       </p>
       <div className="flex items-baseline gap-1 mb-4">
         <span className="text-4xl font-bold text-foreground">{displayPrice}</span>
+        <span className="text-lg text-foreground/40">{card.period}</span>
         {hosting === "vercel" && (
           <span className="text-sm text-blue/70 font-mono ml-2">
             ({card.price} + ${VERCEL_ADDON_PRICE})
@@ -439,7 +444,7 @@ export function PricingSection() {
           }`}
         >
           <div className="inline-block rounded-full bg-orange/10 border border-orange/20 px-4 py-1 text-orange text-base font-medium mb-8">
-            Per-Project Pricing
+            Annual Pricing
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Tokens, not{" "}
@@ -470,8 +475,8 @@ export function PricingSection() {
 
         <p className="text-foreground/30 text-sm mt-8 text-center">
           {hosting === "cloudflare"
-            ? "Hosting on Cloudflare is free. No recurring fees unless you need ongoing updates."
-            : "Vercel + Supabase addon provides premium hosting with database-backed forms."}
+            ? "Annual subscription includes hosting on Cloudflare, SSL, and 3 revisions."
+            : "Annual subscription includes Vercel + Supabase hosting with database-backed forms."}
         </p>
       </div>
     </section>

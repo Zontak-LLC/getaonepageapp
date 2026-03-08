@@ -1,9 +1,10 @@
 /**
  * POST /api/checkout
  *
- * Creates a Stripe Checkout Session tied to the authenticated user.
- * The tier (starter/pro/premium) is passed in the request body and
- * stored in session metadata so the webhook can provision the right credits.
+ * Creates a Stripe Checkout Session (yearly subscription) tied to
+ * the authenticated user. The tier (starter/pro/premium) is passed
+ * in the request body and stored in session metadata so the webhook
+ * can provision the right credits.
  *
  * Required env vars:
  *   STRIPE_SECRET_KEY — Stripe API secret key
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
       price_data: {
         currency: "usd",
         unit_amount: price.amount,
+        recurring: { interval: "year" },
         product_data: {
           name: price.name,
           description: `Build, deploy, hosting (${hostingLabel}), SSL, and 3 revisions included.`,
@@ -71,12 +73,13 @@ export async function POST(request: NextRequest) {
     },
   ];
 
-  /* Vercel + Supabase addon ($15) */
+  /* Vercel + Supabase addon ($15/yr) */
   if (hosting === "vercel") {
     line_items.push({
       price_data: {
         currency: "usd",
         unit_amount: 1500,
+        recurring: { interval: "year" },
         product_data: {
           name: "Vercel + Supabase Hosting",
           description: "Premium hosting with Supabase database backend.",
@@ -89,12 +92,19 @@ export async function POST(request: NextRequest) {
   try {
     const stripe = getStripe();
     const checkoutSession = await stripe.checkout.sessions.create({
-      mode: "payment",
+      mode: "subscription",
       customer_email: session.user.email,
       metadata: {
         tier,
         hosting,
         userEmail: session.user.email,
+      },
+      subscription_data: {
+        metadata: {
+          tier,
+          hosting,
+          userEmail: session.user.email,
+        },
       },
       line_items,
       success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,

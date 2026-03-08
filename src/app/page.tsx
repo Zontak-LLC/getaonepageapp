@@ -102,7 +102,7 @@ export default function Home() {
             <div className="inline-flex items-baseline gap-1 bg-warm-gray/60 border border-orange/20 rounded-2xl px-8 py-4">
               <span className="text-lg text-foreground/50 mr-1">from</span>
               <span className="text-5xl md:text-6xl font-bold text-gradient-sun">$50</span>
-              <span className="text-xl text-foreground/50">/project</span>
+              <span className="text-xl text-foreground/50">/year</span>
             </div>
           </div>
 
@@ -207,12 +207,12 @@ export default function Home() {
             Pay for Your <span className="text-gradient-sun">Site</span>
           </h2>
           <p className="text-foreground/50 text-xl mb-12">
-            One payment per project. Build, deploy, hosting, and SSL included.
+            Annual subscription. Build, deploy, hosting, and SSL included.
           </p>
 
           {/* Stripe CTA */}
           <div className="inline-block min-w-[320px] text-lg [&_button]:py-4 [&_button]:text-lg [&_button]:px-10">
-            <PricingButton tier="starter" label="Get Started — from $50" variant="solid" />
+            <PricingButton tier="starter" label="Get Started — $50/yr" variant="solid" />
           </div>
 
           {/* Stripe trust badge */}
