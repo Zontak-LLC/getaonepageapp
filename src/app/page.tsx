@@ -101,7 +101,7 @@ export default function Home() {
           <div className="mt-10 mb-12">
             <div className="inline-flex items-baseline gap-1 bg-warm-gray/60 border border-orange/20 rounded-2xl px-8 py-4">
               <span className="text-lg text-foreground/50 mr-1">from</span>
-              <span className="text-5xl md:text-6xl font-bold text-gradient-sun">$29</span>
+              <span className="text-5xl md:text-6xl font-bold text-gradient-sun">$50</span>
               <span className="text-xl text-foreground/50">/project</span>
             </div>
           </div>
