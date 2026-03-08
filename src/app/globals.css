@@ -221,6 +221,34 @@ html.light .sun-glow-orange {
     0 0 120px rgba(212, 101, 26, 0.05);
 }
 
+/* ── 3D CTA button: press-down + halo hover ── */
+
+@keyframes halo-pulse {
+  0%, 100% { box-shadow: 0 4px 0 var(--btn-shadow, #7A4A1E), 0 0 0 0 var(--btn-halo, rgba(240,125,46,0.4)); }
+  50%      { box-shadow: 0 4px 0 var(--btn-shadow, #7A4A1E), 0 0 20px 6px var(--btn-halo, rgba(240,125,46,0.25)); }
+}
+
+.btn-3d {
+  --btn-shadow: rgba(180, 80, 10, 0.7);
+  --btn-halo: rgba(240, 125, 46, 0.4);
+  position: relative;
+  transform: translateY(0);
+  box-shadow: 0 4px 0 var(--btn-shadow), 0 6px 14px rgba(0,0,0,0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn-3d:hover {
+  animation: halo-pulse 1.8s ease-in-out infinite;
+  transform: translateY(-1px);
+}
+
+.btn-3d:active {
+  animation: none;
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--btn-shadow), 0 0 12px 2px var(--btn-halo);
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+
 /* Custom range slider track for orange theme */
 input[type="range"].slider-orange {
   -webkit-appearance: none;

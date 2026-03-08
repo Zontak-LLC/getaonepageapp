@@ -3,6 +3,7 @@ import { ChatAgent } from "@/components/chat-agent";
 import { PricingButton } from "@/components/PricingButton";
 import { PricingSection } from "@/components/PricingSection";
 import { Navbar } from "@/components/Navbar";
+import { PortfolioSlider } from "@/components/PortfolioSlider";
 
 /* ─── Icon Components ─── */
 
@@ -107,7 +108,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#contact"
-              className="bg-orange hover:bg-orange-dark text-warm-black font-bold px-10 py-5 rounded-full text-lg transition-all hover:scale-105 shadow-lg shadow-orange/20"
+              className="btn-3d bg-orange hover:bg-orange-dark text-warm-black font-bold px-10 py-5 rounded-full text-lg transition-all"
             >
               Start Your Project
             </a>
@@ -181,28 +182,7 @@ export default function Home() {
             <p className="text-foreground/50 text-xl">When we build a site for you, we become friends.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {portfolio.map((p) => (
-              <a
-                key={p.name}
-                href={p.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block p-8 rounded-2xl border border-orange/10 bg-warm-gray/20 hover:border-orange/40 hover:bg-warm-gray/40 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-orange group-hover:animate-pulse" />
-                  <h3 className="text-xl font-bold text-foreground group-hover:text-orange transition-colors">
-                    {p.name}
-                  </h3>
-                </div>
-                <p className="text-foreground/50 text-base leading-relaxed mb-4">{p.desc}</p>
-                <span className="text-blue text-base font-mono group-hover:underline">
-                  {p.url.replace("https://", "")} &rarr;
-                </span>
-              </a>
-            ))}
-          </div>
+          <PortfolioSlider items={portfolio} />
         </div>
       </section>
 

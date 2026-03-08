@@ -37,6 +37,7 @@ export function PricingButton({
   const { status } = useSession();
   const [loading, setLoading] = useState(false);
   const [pressed, setPressed] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   async function handleClick() {
     if (status !== "authenticated") {
@@ -73,17 +74,20 @@ export function PricingButton({
       onClick={handleClick}
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
-      onMouseLeave={() => setPressed(false)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setPressed(false); setHovered(false); }}
       disabled={loading}
       className="mt-auto block w-full text-center font-bold py-4 rounded-full text-base disabled:opacity-60 select-none"
       style={{
-        background: colors.bg,
+        background: pressed ? colors.bg : hovered ? colors.hoverBg : colors.bg,
         color: colors.text,
         boxShadow: pressed
-          ? `0 1px 0 ${colors.shadow}`
-          : `0 4px 0 ${colors.shadow}, 0 6px 12px rgba(0,0,0,0.25)`,
-        transform: pressed ? "translateY(3px)" : "translateY(0)",
-        transition: "transform 0.1s ease, box-shadow 0.1s ease",
+          ? `0 1px 0 ${colors.shadow}, 0 0 12px 2px ${colors.shadow}40`
+          : hovered
+            ? `0 4px 0 ${colors.shadow}, 0 0 20px 6px ${colors.shadow}50, 0 6px 14px rgba(0,0,0,0.25)`
+            : `0 4px 0 ${colors.shadow}, 0 6px 12px rgba(0,0,0,0.25)`,
+        transform: pressed ? "translateY(3px)" : hovered ? "translateY(-1px)" : "translateY(0)",
+        transition: "transform 0.12s ease, box-shadow 0.3s ease, background 0.3s ease",
         letterSpacing: "0.02em",
       }}
     >
