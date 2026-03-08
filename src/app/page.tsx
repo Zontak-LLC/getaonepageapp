@@ -102,13 +102,13 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#contact"
-              className="bg-orange hover:bg-orange-dark text-warm-black font-bold px-8 py-4 rounded-full text-lg transition-all hover:scale-105 shadow-lg shadow-orange/20"
+              className="bg-orange hover:bg-orange-dark text-warm-black font-bold px-10 py-5 rounded-full text-lg transition-all hover:scale-105 shadow-lg shadow-orange/20"
             >
               Start Your Project
             </a>
             <a
               href="#portfolio"
-              className="border border-foreground/20 hover:border-orange/50 text-foreground font-medium px-8 py-4 rounded-full text-lg transition-all hover:scale-105"
+              className="border border-foreground/20 hover:border-orange/50 text-foreground font-medium px-10 py-5 rounded-full text-lg transition-all hover:scale-105"
             >
               View Our Work
             </a>
