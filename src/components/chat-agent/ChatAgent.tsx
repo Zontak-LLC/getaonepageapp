@@ -31,7 +31,7 @@ export function ChatAgent() {
   }, [messages, streamingText, buildProgress]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)] min-h-[500px]">
+    <div className="flex flex-col lg:flex-row gap-6 min-h-[400px] max-h-[600px]">
       {/* ── Chat Panel ─── */}
       <div className="flex-1 flex flex-col rounded-2xl border border-warm-gray bg-background overflow-hidden">
         {/* Header */}
@@ -55,13 +55,6 @@ export function ChatAgent() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {messages.length === 0 && !isStreaming && (
-            <div className="text-center py-4">
-              <p className="text-foreground/20 text-sm">
-                Start by describing what your business does...
-              </p>
-            </div>
-          )}
 
           {messages.map((msg) => (
             <div key={msg.id}>
