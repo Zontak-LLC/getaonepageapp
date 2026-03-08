@@ -124,7 +124,6 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-foreground/30">
-          <span className="text-xs uppercase tracking-widest">Scroll</span>
           <div className="w-px h-8 bg-gradient-to-b from-foreground/30 to-transparent" />
         </div>
       </section>
