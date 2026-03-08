@@ -210,6 +210,22 @@ export function useChatAgent() {
     [sendMessage],
   );
 
+  /* ─── Start Over (clean slate) ─── */
+
+  const startOver = useCallback(() => {
+    sessionIdRef.current = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    setState({
+      messages: [],
+      partialSpec: {},
+      partialIntake: {},
+      specStatus: "gathering",
+      buildProgress: null,
+      isStreaming: false,
+      streamingText: "",
+      error: null,
+    });
+  }, []);
+
   /* ─── Approve Spec & Start Build ─── */
 
   const approveSpec = useCallback(async () => {
@@ -307,6 +323,7 @@ export function useChatAgent() {
     sendMessage,
     selectOption,
     approveSpec,
+    startOver,
   };
 }
 

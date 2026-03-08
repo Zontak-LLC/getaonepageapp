@@ -4,6 +4,7 @@ import type { BuildProgress as BuildProgressType } from "@/lib/chat-types";
 
 interface BuildProgressProps {
   progress: BuildProgressType;
+  onStartOver?: () => void;
 }
 
 const PHASES = [
@@ -13,7 +14,7 @@ const PHASES = [
   { key: "delivering", label: "Sending notifications", icon: "📧" },
 ] as const;
 
-export function BuildProgress({ progress }: BuildProgressProps) {
+export function BuildProgress({ progress, onStartOver }: BuildProgressProps) {
   const currentIdx = PHASES.findIndex((p) => p.key === progress.phase);
   const isComplete = progress.phase === "complete";
   const isFailed = progress.phase === "failed";
@@ -97,6 +98,17 @@ export function BuildProgress({ progress }: BuildProgressProps) {
         <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400 text-xs">
           Don&apos;t worry — your brief has been sent to the team and they&apos;ll build it manually.
         </div>
+      )}
+
+      {/* Start New Project button (after complete or failed) */}
+      {(isComplete || isFailed) && onStartOver && (
+        <button
+          type="button"
+          onClick={onStartOver}
+          className="w-full mt-2 py-2.5 text-center border border-foreground/10 text-foreground/50 hover:text-orange hover:border-orange/30 font-medium rounded-xl text-sm transition-colors"
+        >
+          Start New Project
+        </button>
       )}
     </div>
   );

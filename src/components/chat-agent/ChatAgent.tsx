@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useChatAgent } from "@/hooks/useChatAgent";
 import { MessageBubble } from "./MessageBubble";
 import { OptionCardGroup } from "./OptionCard";
@@ -9,6 +10,7 @@ import { BuildProgress } from "./BuildProgress";
 import { ChatInput } from "./ChatInput";
 
 export function ChatAgent() {
+  const { status: authStatus } = useSession();
   const {
     messages,
     partialSpec,
@@ -17,9 +19,11 @@ export function ChatAgent() {
     buildProgress,
     isStreaming,
     streamingText,
+    error,
     sendMessage,
     selectOption,
     approveSpec,
+    startOver,
   } = useChatAgent();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,7 +44,7 @@ export function ChatAgent() {
           <div className="w-8 h-8 rounded-full bg-orange/10 flex items-center justify-center">
             <span className="text-orange text-sm">Z</span>
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-semibold text-foreground">
               Zontak Agent
             </p>
@@ -52,6 +56,20 @@ export function ChatAgent() {
                   : "Tell me about your project"}
             </p>
           </div>
+          {/* Start Over button */}
+          {hasConversation && !isStreaming && (
+            <button
+              type="button"
+              onClick={startOver}
+              className="flex items-center gap-1.5 text-xs text-foreground/40 hover:text-orange transition-colors px-3 py-1.5 rounded-lg hover:bg-orange/5"
+              title="Start a new project"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Start Over
+            </button>
+          )}
         </div>
 
         {/* Messages */}
@@ -105,6 +123,16 @@ export function ChatAgent() {
             </div>
           )}
 
+          {/* Error display */}
+          {error && (
+            <div className="flex justify-start mb-4">
+              <div className="max-w-[80%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed bg-red-500/10 border border-red-500/20 text-red-400">
+                <p className="font-medium mb-1">Something went wrong</p>
+                <p className="text-red-400/70">{error}</p>
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -125,13 +153,14 @@ export function ChatAgent() {
       {/* ── Sidebar ─── */}
       <div className="lg:w-80 shrink-0">
         {isBuildPhase ? (
-          <BuildProgress progress={buildProgress} />
+          <BuildProgress progress={buildProgress} onStartOver={startOver} />
         ) : (
           <SpecPreview
             spec={partialSpec}
             intake={partialIntake}
             specStatus={specStatus}
             onApprove={approveSpec}
+            isAuthenticated={authStatus === "authenticated"}
           />
         )}
       </div>

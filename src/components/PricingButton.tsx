@@ -4,9 +4,24 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 const TIER_BUTTON_COLORS = {
-  starter: { accent: "#CD7F32", accentDark: "#A0622A", tint: "rgba(205,127,50,0.10)", tintHover: "rgba(205,127,50,0.20)", border: "rgba(205,127,50,0.20)" },
-  pro: { accent: "#C0C0C0", accentDark: "#A0A0A0", tint: "rgba(192,192,192,0.10)", tintHover: "rgba(192,192,192,0.20)", border: "rgba(192,192,192,0.20)" },
-  premium: { accent: "#FFD700", accentDark: "#CCB000", tint: "rgba(255,215,0,0.10)", tintHover: "rgba(255,215,0,0.20)", border: "rgba(255,215,0,0.20)" },
+  starter: {
+    bg: "linear-gradient(180deg, #D4923F 0%, #CD7F32 40%, #A0622A 100%)",
+    shadow: "#7A4A1E",
+    text: "#1A1510",
+    hoverBg: "linear-gradient(180deg, #DDA050 0%, #D4923F 40%, #AD6B2E 100%)",
+  },
+  pro: {
+    bg: "linear-gradient(180deg, #D4D4D4 0%, #C0C0C0 40%, #A0A0A0 100%)",
+    shadow: "#6E6E6E",
+    text: "#1A1510",
+    hoverBg: "linear-gradient(180deg, #E0E0E0 0%, #D0D0D0 40%, #B0B0B0 100%)",
+  },
+  premium: {
+    bg: "linear-gradient(180deg, #FFE566 0%, #FFD700 40%, #CCB000 100%)",
+    shadow: "#8C7800",
+    text: "#1A1510",
+    hoverBg: "linear-gradient(180deg, #FFED80 0%, #FFE033 40%, #D4B800 100%)",
+  },
 } as const;
 
 interface PricingButtonProps {
@@ -18,10 +33,10 @@ interface PricingButtonProps {
 export function PricingButton({
   tier,
   label = "Get Started",
-  variant = "outline",
 }: PricingButtonProps) {
   const { status } = useSession();
   const [loading, setLoading] = useState(false);
+  const [pressed, setPressed] = useState(false);
 
   async function handleClick() {
     if (status !== "authenticated") {
@@ -53,20 +68,24 @@ export function PricingButton({
 
   const colors = TIER_BUTTON_COLORS[tier];
 
-  const baseClass =
-    "mt-auto block w-full text-center font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-60";
-
-  const inlineStyle =
-    variant === "solid"
-      ? { backgroundColor: colors.accent, color: "#1A1510" }
-      : { backgroundColor: colors.tint, color: colors.accent, border: `1px solid ${colors.border}` };
-
   return (
     <button
       onClick={handleClick}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
       disabled={loading}
-      className={baseClass}
-      style={inlineStyle}
+      className="mt-auto block w-full text-center font-bold py-4 rounded-full text-base disabled:opacity-60 select-none"
+      style={{
+        background: colors.bg,
+        color: colors.text,
+        boxShadow: pressed
+          ? `0 1px 0 ${colors.shadow}`
+          : `0 4px 0 ${colors.shadow}, 0 6px 12px rgba(0,0,0,0.25)`,
+        transform: pressed ? "translateY(3px)" : "translateY(0)",
+        transition: "transform 0.1s ease, box-shadow 0.1s ease",
+        letterSpacing: "0.02em",
+      }}
     >
       {loading ? "Redirecting…" : label}
     </button>

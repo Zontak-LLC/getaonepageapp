@@ -83,12 +83,12 @@ const TIER_COLORS = {
     label: "Silver",
   },
   premium: {
-    accent: "#FFD700",       // Gold
-    accentLight: "#FFE033",
-    accentDark: "#CCB000",
-    bgTint: "rgba(255,215,0,0.10)",
-    borderTint: "rgba(255,215,0,0.20)",
-    borderHover: "rgba(255,215,0,0.40)",
+    accent: "#D4A800",       // Darker Gold — readable on light bg
+    accentLight: "#FFD700",
+    accentDark: "#B8920A",
+    bgTint: "rgba(212,168,0,0.12)",
+    borderTint: "rgba(212,168,0,0.25)",
+    borderHover: "rgba(212,168,0,0.50)",
     label: "Gold",
   },
 } as const;
@@ -103,7 +103,6 @@ type TierCard = {
   features: string[];
   tier: "starter" | "pro" | "premium";
   highlight: boolean;
-  variant: "outline" | "solid";
 };
 
 const TIER_CARDS: TierCard[] = [
@@ -120,7 +119,6 @@ const TIER_CARDS: TierCard[] = [
     ],
     tier: "starter",
     highlight: false,
-    variant: "outline",
   },
   {
     id: "tier-pro",
@@ -136,7 +134,6 @@ const TIER_CARDS: TierCard[] = [
     ],
     tier: "pro",
     highlight: true,
-    variant: "solid",
   },
   {
     id: "tier-premium",
@@ -152,7 +149,6 @@ const TIER_CARDS: TierCard[] = [
     ],
     tier: "premium",
     highlight: false,
-    variant: "outline",
   },
 ];
 
@@ -328,8 +324,11 @@ function TierCardComponent({
       )}
 
       <p
-        className="text-sm font-bold uppercase tracking-widest mb-3"
-        style={{ color: colors.accent }}
+        className="text-base font-extrabold uppercase tracking-widest mb-3"
+        style={{
+          color: colors.accent,
+          textShadow: `0 0 12px ${colors.accent}40, 0 0 4px ${colors.accent}20`,
+        }}
       >
         {card.name}
       </p>
@@ -347,7 +346,7 @@ function TierCardComponent({
         ))}
       </ul>
 
-      <PricingButton tier={card.tier} variant={card.variant} />
+      <PricingButton tier={card.tier} />
     </div>
   );
 }

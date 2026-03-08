@@ -13,8 +13,8 @@
  */
 
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/lib/auth";
+import { createAnthropicClient } from "@/lib/anthropic";
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
@@ -41,24 +41,10 @@ function sseEvent(event: SSEEvent): string {
 /* ─── POST Handler ─── */
 
 export async function POST(request: Request) {
-  // ── Auth check ──
+  try {
+  // ── Auth (optional — anonymous chat allowed for gathering phase) ──
   const session = await auth();
-  if (!session?.user?.email) {
-    return NextResponse.json(
-      { error: "Authentication required" },
-      { status: 401 },
-    );
-  }
-  const userEmail = session.user.email;
-
-  // ── Rate limit (30 messages/hour) ──
-  const rl = rateLimit(`chat:${userEmail}`, 30, 60 * 60 * 1000);
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: `Rate limit exceeded. Try again in ${rl.resetInSeconds}s.` },
-      { status: 429 },
-    );
-  }
+  const userEmail = session?.user?.email ?? "anonymous";
 
   // ── Parse request ──
   let body: ChatRequest;
@@ -72,6 +58,16 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "sessionId and message are required" },
       { status: 400 },
+    );
+  }
+
+  // ── Rate limit (30 messages/hour, keyed by email or sessionId) ──
+  const rateLimitKey = userEmail !== "anonymous" ? userEmail : body.sessionId;
+  const rl = rateLimit(`chat:${rateLimitKey}`, 30, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Rate limit exceeded. Try again in ${rl.resetInSeconds}s.` },
+      { status: 429 },
     );
   }
 
@@ -121,15 +117,7 @@ export async function POST(request: Request) {
   }));
 
   // ── Stream response ──
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
-      { status: 500 },
-    );
-  }
-
-  const client = new Anthropic({ apiKey });
+  const client = createAnthropicClient();
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -270,4 +258,11 @@ export async function POST(request: Request) {
       Connection: "keep-alive",
     },
   });
+
+  } catch (err) {
+    // Top-level catch — surface unhandled errors as JSON
+    const message = err instanceof Error ? err.message : "Internal server error";
+    console.error("[/api/chat] Unhandled error:", err);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

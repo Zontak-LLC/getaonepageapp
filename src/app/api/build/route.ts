@@ -13,6 +13,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getAnthropicApiKey } from "@/lib/anthropic";
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
@@ -70,18 +71,9 @@ export async function POST(request: Request) {
     );
   }
 
-  // ── Check API key ──
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
-      { status: 500 },
-    );
-  }
-
   // ── Build env ──
   const env: BuildEnv = {
-    ANTHROPIC_API_KEY: apiKey,
+    ANTHROPIC_API_KEY: getAnthropicApiKey(),
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NOTIFY_EMAIL: process.env.NOTIFY_EMAIL,
     FROM_EMAIL: process.env.FROM_EMAIL,

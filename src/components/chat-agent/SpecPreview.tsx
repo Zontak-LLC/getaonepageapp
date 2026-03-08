@@ -9,6 +9,7 @@ interface SpecPreviewProps {
   intake: Partial<ProjectIntakeData>;
   specStatus: SpecStatus;
   onApprove: () => void;
+  isAuthenticated: boolean;
 }
 
 export function SpecPreview({
@@ -16,6 +17,7 @@ export function SpecPreview({
   intake,
   specStatus,
   onApprove,
+  isAuthenticated,
 }: SpecPreviewProps) {
   const hasContent =
     spec.headline || spec.subheadline || spec.sections?.length;
@@ -129,15 +131,24 @@ export function SpecPreview({
         </div>
       )}
 
-      {/* Approve button */}
+      {/* Approve / Sign-in button */}
       {specStatus === "reviewing" && (
-        <button
-          type="button"
-          onClick={onApprove}
-          className="w-full mt-4 py-3 bg-orange text-background font-semibold rounded-xl text-sm hover:bg-orange-light transition-colors"
-        >
-          Approve & Build
-        </button>
+        isAuthenticated ? (
+          <button
+            type="button"
+            onClick={onApprove}
+            className="w-full mt-4 py-3 bg-orange text-background font-semibold rounded-xl text-sm hover:bg-orange-light transition-colors"
+          >
+            Approve &amp; Build
+          </button>
+        ) : (
+          <a
+            href="/auth/signin"
+            className="block w-full mt-4 py-3 text-center bg-orange text-background font-semibold rounded-xl text-sm hover:bg-orange-light transition-colors"
+          >
+            Sign In to Build
+          </a>
+        )
       )}
     </div>
   );
