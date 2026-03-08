@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function SignUpPage() {
   const session = await auth();
-  if (session?.user) redirect("/#contact");
+  if (session?.user) redirect("/#your-project");
 
   return (
     <main className="min-h-screen bg-warm-black text-foreground flex items-center justify-center py-12">

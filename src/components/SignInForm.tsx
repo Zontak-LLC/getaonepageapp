@@ -7,7 +7,7 @@ import { useState, type FormEvent } from "react";
 export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/#contact";
+  const callbackUrl = searchParams.get("callbackUrl") || "/#your-project";
   const justRegistered = searchParams.get("registered") === "true";
 
   const [email, setEmail] = useState("");

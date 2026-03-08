@@ -172,7 +172,7 @@ export default async function WelcomePage({
         {/* CTA Button */}
         <div className="text-center mb-8">
           <a
-            href="/#contact"
+            href="/#your-project"
             className="inline-block bg-orange hover:bg-orange-dark text-warm-black font-bold px-10 py-4 rounded-full text-lg transition-all hover:scale-105 shadow-lg shadow-orange/20"
           >
             Submit Your Project Brief &rarr;

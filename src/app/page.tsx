@@ -4,6 +4,7 @@ import { PricingButton } from "@/components/PricingButton";
 import { PricingSection } from "@/components/PricingSection";
 import { Navbar } from "@/components/Navbar";
 import { PortfolioSlider } from "@/components/PortfolioSlider";
+import { FooterContactForm } from "@/components/FooterContactForm";
 
 /* ─── Icon Components ─── */
 
@@ -107,7 +108,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="#contact"
+              href="#your-project"
               className="btn-3d bg-orange hover:bg-orange-dark text-warm-black font-bold px-10 py-5 rounded-full text-lg transition-all"
             >
               Start Your Project
@@ -229,7 +230,7 @@ export default function Home() {
       <div className="divider-sun" />
 
       {/* ─── Contact / Chat Agent ─── */}
-      <section id="contact" className="relative py-32 px-6">
+      <section id="your-project" className="relative py-32 px-6">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-orange/5 blur-3xl" />
         </div>
@@ -248,24 +249,71 @@ export default function Home() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-orange/10 py-12 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/zontak-logo.svg"
-              alt="Zontak"
-              width={32}
-              height={32}
-            />
-            <span className="font-semibold text-base">
-              <span className="text-orange">ZON</span>
-              <span className="text-blue">TAK</span>
-              <span className="text-foreground/30 ml-2">AI First Creative Company</span>
-            </span>
+      <footer className="border-t border-orange/10 pt-16 pb-8 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 mb-12">
+            {/* Left: Contact form */}
+            <div>
+              <h3 className="text-2xl font-bold mb-2">
+                Get in <span className="text-gradient-sun">Touch</span>
+              </h3>
+              <p className="text-foreground/50 text-base mb-6">
+                Questions about your project, revisions, or anything else? We&apos;re here to help.
+              </p>
+              <FooterContactForm />
+            </div>
+
+            {/* Right: Info + domain note */}
+            <div className="flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <Image
+                    src="/zontak-logo.svg"
+                    alt="Zontak"
+                    width={36}
+                    height={36}
+                  />
+                  <span className="text-xl font-bold">
+                    <span className="text-orange">ZON</span>
+                    <span className="text-blue">TAK</span>
+                  </span>
+                </div>
+                <p className="text-foreground/40 text-base leading-relaxed mb-6">
+                  AI-first creative company. We build beautiful, fast single-page applications for small businesses — from spec to live site in minutes.
+                </p>
+
+                {/* Domain CTA */}
+                <div className="rounded-xl border border-blue/20 bg-blue/5 p-5 mb-6">
+                  <p className="text-blue font-semibold text-base mb-1">
+                    🌐 Want a custom domain?
+                  </p>
+                  <p className="text-foreground/50 text-sm leading-relaxed">
+                    Your site launches on a free <code className="text-foreground/60 bg-warm-gray/40 px-1.5 py-0.5 rounded text-xs">.vercel.app</code> URL.
+                    Want to connect your own domain like <code className="text-foreground/60 bg-warm-gray/40 px-1.5 py-0.5 rounded text-xs">yourbusiness.com</code>?
+                    Just reach out — we&apos;ll set it up for you at no extra charge.
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-foreground/20 text-sm">
+                <a href="mailto:dzontak@gmail.com" className="hover:text-orange transition-colors">
+                  dzontak@gmail.com
+                </a>
+              </div>
+            </div>
           </div>
-          <p className="text-foreground/30 text-base">
-            &copy; {new Date().getFullYear()} Zontak LLC. All rights reserved.
-          </p>
+
+          {/* Bottom bar */}
+          <div className="border-t border-orange/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-foreground/25 text-sm">
+              &copy; {new Date().getFullYear()} Zontak LLC. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-foreground/25 text-sm">
+              <a href="#services" className="hover:text-foreground/50 transition-colors">Services</a>
+              <a href="#pricing" className="hover:text-foreground/50 transition-colors">Pricing</a>
+              <a href="#portfolio" className="hover:text-foreground/50 transition-colors">Portfolio</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

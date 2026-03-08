@@ -184,7 +184,7 @@ function ComplexityCalculator() {
     } else {
       // Custom tier → scroll to contact form
       document
-        .getElementById("contact")
+        .getElementById("your-project")
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
