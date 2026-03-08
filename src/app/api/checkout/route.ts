@@ -53,9 +53,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const stripe = getStripe();
-
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://getaonepageapp.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://getaonepage.app";
 
   const hostingLabel = hosting === "vercel" ? "Vercel + Supabase" : "Cloudflare Pages";
 
@@ -73,7 +71,7 @@ export async function POST(request: NextRequest) {
     },
   ];
 
-  /* Vercel + Supabase addon ($12) */
+  /* Vercel + Supabase addon ($15) */
   if (hosting === "vercel") {
     line_items.push({
       price_data: {
@@ -88,18 +86,25 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: session.user.email,
-    metadata: {
-      tier,
-      hosting,
-      userEmail: session.user.email,
-    },
-    line_items,
-    success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/#pricing`,
-  });
+  try {
+    const stripe = getStripe();
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: session.user.email,
+      metadata: {
+        tier,
+        hosting,
+        userEmail: session.user.email,
+      },
+      line_items,
+      success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/#pricing`,
+    });
 
-  return NextResponse.json({ url: checkoutSession.url });
+    return NextResponse.json({ url: checkoutSession.url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown checkout error";
+    console.error("Stripe checkout error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

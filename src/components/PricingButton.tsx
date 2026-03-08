@@ -40,6 +40,7 @@ export function PricingButton({
 }: PricingButtonProps) {
   const { status } = useSession();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [pressed, setPressed] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -50,6 +51,7 @@ export function PricingButton({
     }
 
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -57,16 +59,23 @@ export function PricingButton({
         body: JSON.stringify({ tier, hosting }),
       });
 
-      const data = (await res.json()) as { url?: string; error?: string };
+      let data: { url?: string; error?: string };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`Server error (${res.status})`);
+      }
 
       if (data.url) {
         window.location.href = data.url;
       } else {
-        console.error("Checkout error:", data.error);
+        setError(data.error ?? "Checkout failed");
         setLoading(false);
       }
     } catch (err) {
-      console.error("Checkout failed:", err);
+      const msg = err instanceof Error ? err.message : "Checkout failed";
+      console.error("Checkout failed:", msg);
+      setError(msg);
       setLoading(false);
     }
   }
@@ -96,6 +105,9 @@ export function PricingButton({
       }}
     >
       {loading ? "Redirecting…" : label}
+      {error && (
+        <span className="block text-xs text-red-400 mt-1 font-normal">{error}</span>
+      )}
     </button>
   );
 }
