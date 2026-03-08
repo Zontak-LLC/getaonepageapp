@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -10,15 +10,6 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
   const [value, setValue] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize textarea
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
-  }, [value]);
 
   const handleSubmit = () => {
     const trimmed = value.trim();
@@ -35,16 +26,15 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
   };
 
   return (
-    <div className="flex items-end gap-3 p-4 border-t border-warm-gray bg-background">
+    <div className="flex items-end gap-3 p-4 border-t border-warm-gray/50 bg-background">
       <textarea
-        ref={textareaRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder={placeholder ?? "Describe your project..."}
-        rows={1}
-        className="flex-1 resize-none rounded-xl bg-warm-black border border-warm-gray px-4 py-3 text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-orange/40 transition-colors disabled:opacity-50"
+        rows={3}
+        className="flex-1 resize-y min-h-[80px] max-h-[300px] rounded-xl bg-warm-black border border-warm-gray px-4 py-3 text-base text-foreground placeholder-foreground/30 focus:outline-none focus:border-orange/40 transition-colors disabled:opacity-50"
       />
       <button
         type="button"
