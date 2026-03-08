@@ -24,6 +24,7 @@ export function ChatAgent() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isBuildPhase = !!buildProgress;
+  const hasConversation = messages.length > 0 || isStreaming;
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -31,7 +32,7 @@ export function ChatAgent() {
   }, [messages, streamingText, buildProgress]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 min-h-[400px] max-h-[600px]">
+    <div className={`flex flex-col lg:flex-row gap-6${hasConversation ? " min-h-[400px] max-h-[600px]" : ""}`}>
       {/* ── Chat Panel ─── */}
       <div className="flex-1 flex flex-col rounded-2xl border border-warm-gray bg-background overflow-hidden">
         {/* Header */}
@@ -54,7 +55,7 @@ export function ChatAgent() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className={`overflow-y-auto px-6${hasConversation ? " flex-1 py-4" : " py-0"}`}>
 
           {messages.map((msg) => (
             <div key={msg.id}>
