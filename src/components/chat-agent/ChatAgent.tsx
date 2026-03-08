@@ -56,7 +56,7 @@ export function ChatAgent() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {messages.length === 0 && !isStreaming && (
-            <div className="text-center py-12">
+            <div className="text-center py-4">
               <p className="text-foreground/20 text-sm">
                 Start by describing what your business does...
               </p>
