@@ -213,7 +213,7 @@ export default function Home() {
 
           {/* Stripe CTA */}
           <div className="inline-block min-w-[320px] text-lg [&_button]:py-4 [&_button]:text-lg [&_button]:px-10">
-            <PricingButton tier="starter" label="Get Started — from $29" variant="solid" />
+            <PricingButton tier="starter" label="Get Started — from $50" variant="solid" />
           </div>
 
           {/* Stripe trust badge */}

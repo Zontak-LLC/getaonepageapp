@@ -191,7 +191,7 @@ export function clientEmailHtml(
   // CTA text changes based on whether site is already built
   const ctaText = siteUrl
     ? "Get Custom Domain + Hosting →"
-    : "Get Started — from $29 →";
+    : "Get Started — from $50 →";
 
   const ctaSubtext = siteUrl
     ? "Custom domain · SSL · Hosting · All included"
