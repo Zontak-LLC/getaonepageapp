@@ -13,7 +13,7 @@ const COMPLEXITY_LEVELS = [
     description: "Simple one-page site for a local business or personal brand.",
     sections: "3–4",
     tokenCost: "$2 – $4",
-    youPay: "$29",
+    youPay: "$50",
     time: "~5 min",
     model: "HAIKU",
     modelColor: "text-emerald-400",
@@ -26,7 +26,7 @@ const COMPLEXITY_LEVELS = [
     description: "Custom styling, more sections, and SEO-optimized copy.",
     sections: "5–7",
     tokenCost: "$5 – $10",
-    youPay: "$49",
+    youPay: "$75",
     time: "~12 min",
     model: "SONNET",
     modelColor: "text-blue",
@@ -39,7 +39,7 @@ const COMPLEXITY_LEVELS = [
     description: "Complex site with extensive content, custom palette, and priority build.",
     sections: "8–12",
     tokenCost: "$10 – $18",
-    youPay: "$79",
+    youPay: "$100",
     time: "~20 min",
     model: "SONNET",
     modelColor: "text-blue",
@@ -110,7 +110,7 @@ const TIER_CARDS: TierCard[] = [
   {
     id: "tier-starter",
     name: "Starter",
-    price: "$29",
+    price: "$50",
     tagline: "Simple one-page site for a local business or personal brand.",
     features: [
       "Single-page responsive site",
@@ -124,7 +124,7 @@ const TIER_CARDS: TierCard[] = [
   {
     id: "tier-pro",
     name: "Pro",
-    price: "$49",
+    price: "$75",
     tagline: "Custom styling, more sections, and SEO-optimized copy.",
     features: [
       "Everything in Starter",
@@ -139,7 +139,7 @@ const TIER_CARDS: TierCard[] = [
   {
     id: "tier-premium",
     name: "Premium",
-    price: "$79",
+    price: "$100",
     tagline: "Complex site with extensive content, custom palette, and priority build.",
     features: [
       "Everything in Pro",
@@ -290,7 +290,7 @@ function ComplexityCalculator() {
 
 /* ─── Hosting Toggle ─────────────────────────────────────────── */
 
-const VERCEL_ADDON_PRICE = 12;
+const VERCEL_ADDON_PRICE = 15;
 
 function HostingToggle({
   hosting,

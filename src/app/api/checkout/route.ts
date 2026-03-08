@@ -14,9 +14,9 @@ import Stripe from "stripe";
 import { auth } from "@/lib/auth";
 
 const PRICE_MAP: Record<string, { amount: number; name: string }> = {
-  starter: { amount: 2900, name: "Starter — One-Page App" },
-  pro: { amount: 4900, name: "Pro — One-Page App" },
-  premium: { amount: 7900, name: "Premium — One-Page App" },
+  starter: { amount: 5000, name: "Starter — One-Page App" },
+  pro: { amount: 7500, name: "Pro — One-Page App" },
+  premium: { amount: 10000, name: "Premium — One-Page App" },
 };
 
 function getStripe() {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     line_items.push({
       price_data: {
         currency: "usd",
-        unit_amount: 1200,
+        unit_amount: 1500,
         product_data: {
           name: "Vercel + Supabase Hosting",
           description: "Premium hosting with Supabase database backend.",
