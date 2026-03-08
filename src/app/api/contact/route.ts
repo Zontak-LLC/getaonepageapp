@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 
-const TO_EMAIL = "dzontak@gmail.com";
+const TO_EMAIL = "getaonepageapp@gmail.com";
 const HOUR_MS = 60 * 60 * 1000;
 
 export async function POST(req: Request) {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   if (!resendKey) {
     console.error("RESEND_API_KEY not configured");
     return NextResponse.json(
-      { error: "Email service unavailable. Please email us directly at dzontak@gmail.com." },
+      { error: "Email service unavailable. Please email us directly at getaonepageapp@gmail.com." },
       { status: 503 },
     );
   }
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     const text = await res.text();
     console.error(`Resend error ${res.status}: ${text.slice(0, 200)}`);
     return NextResponse.json(
-      { error: "Failed to send. Please email us directly at dzontak@gmail.com." },
+      { error: "Failed to send. Please email us directly at getaonepageapp@gmail.com." },
       { status: 502 },
     );
   }

@@ -296,8 +296,8 @@ export default function Home() {
               </div>
 
               <div className="text-foreground/20 text-sm">
-                <a href="mailto:dzontak@gmail.com" className="hover:text-orange transition-colors">
-                  dzontak@gmail.com
+                <a href="mailto:getaonepageapp@gmail.com" className="hover:text-orange transition-colors">
+                  getaonepageapp@gmail.com
                 </a>
               </div>
             </div>
