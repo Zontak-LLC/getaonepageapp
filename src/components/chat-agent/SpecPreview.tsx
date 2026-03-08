@@ -22,7 +22,7 @@ export function SpecPreview({
 
   if (!hasContent) {
     return (
-      <div className="rounded-2xl border border-warm-gray bg-warm-black p-6 text-center">
+      <div className="rounded-2xl border border-warm-gray bg-warm-black p-6 text-center h-full flex items-center justify-center">
         <p className="text-foreground/30 text-sm">
           Your site spec will appear here as we chat...
         </p>
