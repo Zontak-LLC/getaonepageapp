@@ -138,6 +138,7 @@ function makeEnv(overrides: Partial<BuildEnv> = {}): BuildEnv {
     NOTIFY_EMAIL: "team@test.com",
     FROM_EMAIL: "noreply@test.com",
     VERCEL_TOKEN: "test-vercel",
+    hosting: "cloudflare",
     ...overrides,
   };
 }

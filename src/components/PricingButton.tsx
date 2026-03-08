@@ -24,14 +24,18 @@ const TIER_BUTTON_COLORS = {
   },
 } as const;
 
+import type { HostingPlatform } from "@/lib/chat-types";
+
 interface PricingButtonProps {
   tier: "starter" | "pro" | "premium";
+  hosting?: HostingPlatform;
   label?: string;
   variant?: "solid" | "outline";
 }
 
 export function PricingButton({
   tier,
+  hosting = "cloudflare",
   label = "Get Started",
 }: PricingButtonProps) {
   const { status } = useSession();
@@ -50,7 +54,7 @@ export function PricingButton({
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, hosting }),
       });
 
       const data = (await res.json()) as { url?: string; error?: string };

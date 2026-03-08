@@ -26,10 +26,23 @@ model CreditRecord {
   total     Int      @default(3)
   used      Int      @default(0)
   plan      String   @default("standard")
+  hosting   String   @default("cloudflare") // "cloudflare" | "vercel"
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("credit_records")
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  projectSlug String   @map("project_slug")
+  name        String
+  email       String
+  message     String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([projectSlug])
+  @@map("submissions")
 }
 
 model ExecutionSession {

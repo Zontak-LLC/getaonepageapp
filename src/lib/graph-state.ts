@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { CreditRecord } from "./chat-types";
+import type { CreditRecord, HostingPlatform } from "./chat-types";
 import { CREDITS_INCLUDED } from "./chat-types";
 
 /* ─── Credit CRUD ─── */
@@ -25,6 +25,7 @@ export async function loadCredits(
     total: row.total,
     used: row.used,
     plan: row.plan as CreditRecord["plan"],
+    hosting: (row.hosting ?? "cloudflare") as HostingPlatform,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -41,12 +42,14 @@ export async function saveCredits(
       total: record.total,
       used: record.used,
       plan: record.plan,
+      hosting: record.hosting ?? "cloudflare",
     },
     create: {
       email,
       total: record.total,
       used: record.used,
       plan: record.plan,
+      hosting: record.hosting ?? "cloudflare",
     },
   });
 }
@@ -68,6 +71,7 @@ export async function getOrCreateCredits(
       total: CREDITS_INCLUDED,
       used: 0,
       plan: "standard",
+      hosting: "cloudflare",
     },
   });
 
@@ -76,6 +80,7 @@ export async function getOrCreateCredits(
     total: row.total,
     used: row.used,
     plan: row.plan as CreditRecord["plan"],
+    hosting: (row.hosting ?? "cloudflare") as HostingPlatform,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -105,6 +110,7 @@ export async function deductCredit(
     total: row.total,
     used: row.used,
     plan: row.plan as CreditRecord["plan"],
+    hosting: (row.hosting ?? "cloudflare") as HostingPlatform,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

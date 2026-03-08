@@ -71,6 +71,12 @@ export async function POST(request: Request) {
     );
   }
 
+  // ── Load hosting preference from CreditRecord ──
+  const credits = await prisma.creditRecord.findUnique({
+    where: { email: userEmail.toLowerCase().trim() },
+  });
+  const hosting = credits?.hosting === "vercel" ? "vercel" as const : "cloudflare" as const;
+
   // ── Build env ──
   const env: BuildEnv = {
     ANTHROPIC_API_KEY: getAnthropicApiKey(),
@@ -79,6 +85,11 @@ export async function POST(request: Request) {
     FROM_EMAIL: process.env.FROM_EMAIL,
     VERCEL_TOKEN: process.env.VERCEL_TOKEN,
     VERCEL_TEAM_ID: process.env.VERCEL_TEAM_ID,
+    CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+    CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    hosting,
   };
 
   // ── Override contact email with auth email ──

@@ -14,8 +14,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { ProjectIntakeData, SiteSpec } from "./intake-types";
 import type { BuildProgress, BuildResult } from "./chat-types";
 import { resolveColors } from "./site-builder";
-import { deployToVercel } from "./vercel-deploy";
+import { deployToVercel, slugifyProjectName } from "./vercel-deploy";
+import { deployToCloudflare } from "./cloudflare-deploy";
 import { getOrCreateCredits, deductCredit, creditsRemaining } from "./graph-state";
+import type { HostingPlatform } from "./chat-types";
 import { teamEmailHtml, clientEmailHtml } from "./email-templates";
 import type { GenerateOutput, ValidateOutput } from "./chat-types";
 import { MODEL_IDS } from "./model-router";
@@ -32,8 +34,17 @@ export interface BuildEnv {
   RESEND_API_KEY?: string;
   NOTIFY_EMAIL?: string;
   FROM_EMAIL?: string;
+  /* ── Vercel (premium) ── */
   VERCEL_TOKEN?: string;
   VERCEL_TEAM_ID?: string;
+  /* ── Cloudflare (default) ── */
+  CLOUDFLARE_API_TOKEN?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  /* ── Supabase (for Vercel-hosted contact forms) ── */
+  SUPABASE_URL?: string;
+  SUPABASE_ANON_KEY?: string;
+  /* ── Hosting preference ── */
+  hosting: HostingPlatform;
 }
 
 /* ─── Build Prompt (from graph-nodes.ts NODE_PROMPTS.build) ─── */
@@ -41,9 +52,11 @@ export interface BuildEnv {
 function buildPrompt(
   spec: SiteSpec,
   intake: ProjectIntakeData,
+  env: BuildEnv,
 ): string {
   const { business, project, contact, style } = intake;
   const colors = resolveColors(style);
+  const slug = slugifyProjectName(business.businessName);
 
   const sectionsBlock = spec.sections
     .map(
@@ -53,6 +66,72 @@ function buildPrompt(
   Content: ${s.suggestedContent}`,
     )
     .join("\n\n");
+
+  /* ── Contact form instructions vary by hosting platform ── */
+  const contactFormInstructions = env.hosting === "vercel" && env.SUPABASE_URL && env.SUPABASE_ANON_KEY
+    ? `
+CONTACT FORM (Supabase):
+Include a contact form section with Name, Email, and Message fields.
+Add this script tag before </body>:
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const sb = supabase.createClient('${env.SUPABASE_URL}', '${env.SUPABASE_ANON_KEY}');
+  document.querySelector('#contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Sending...';
+    try {
+      const { error } = await sb.from('submissions').insert({
+        project_slug: '${slug}',
+        name: this.querySelector('[name="name"]').value,
+        email: this.querySelector('[name="email"]').value,
+        message: this.querySelector('[name="message"]').value
+      });
+      if (error) throw error;
+      this.reset();
+      btn.textContent = 'Sent!';
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Send Message'; }, 3000);
+    } catch(err) {
+      btn.textContent = 'Send failed — try again';
+      btn.disabled = false;
+    }
+  });
+</script>
+Give the form id="contact-form". Style it to match the site design.`
+    : `
+CONTACT FORM (API):
+Include a contact form section with Name, Email, and Message fields.
+The form must POST to "https://getaonepage.app/api/submissions" using fetch() with JSON body:
+{ "projectSlug": "${slug}", "name": "<name>", "email": "<email>", "message": "<message>" }
+Set Content-Type to application/json. Show success/error state by updating the button text.
+Give the form id="contact-form". Style it to match the site design.
+Example JavaScript (inline before </body>):
+<script>
+  document.querySelector('#contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Sending...';
+    try {
+      const res = await fetch('https://getaonepage.app/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectSlug: '${slug}',
+          name: this.querySelector('[name="name"]').value,
+          email: this.querySelector('[name="email"]').value,
+          message: this.querySelector('[name="message"]').value
+        })
+      });
+      if (!res.ok) throw new Error('Send failed');
+      this.reset();
+      btn.textContent = 'Sent!';
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Send Message'; }, 3000);
+    } catch(err) {
+      btn.textContent = 'Send failed — try again';
+      btn.disabled = false;
+    }
+  });
+</script>`;
 
   return `You are an expert front-end developer building a complete, production-ready single-page website.
 
@@ -80,9 +159,10 @@ SEO DESCRIPTION: ${spec.seoDescription}
 
 SECTIONS TO BUILD:
 ${sectionsBlock}
+${contactFormInstructions}
 
 REQUIREMENTS:
-1. Output a COMPLETE, VALID HTML file with embedded CSS in a <style> tag. No external dependencies, no JavaScript frameworks, no CDN links.
+1. Output a COMPLETE, VALID HTML file with embedded CSS in a <style> tag. No external dependencies except the Supabase CDN if specified above, no JavaScript frameworks.
 2. The page must be FULLY RESPONSIVE (mobile-first, looks great on 375px-1440px).
 3. Use semantic HTML5 (header, nav, main, section, footer).
 4. Each section from the spec becomes an HTML <section> with an id (kebab-case of sectionName).
@@ -96,7 +176,7 @@ REQUIREMENTS:
 12. Include hover effects on interactive elements.
 13. Ensure text colors have good contrast against their backgrounds.
 14. The <title> should be "${business.businessName} — ${spec.headline}".
-15. Use only minimal JavaScript for smooth scrolling and mobile nav toggle (no libraries).
+15. Use only minimal JavaScript for smooth scrolling, mobile nav toggle, and the contact form handler.
 16. The CSS should include a print-friendly @media print block that hides nav and shows content.
 
 Respond with ONLY valid JSON — no markdown, no code fences:
@@ -182,7 +262,7 @@ export async function runBuildPipeline(
   let buildNotes: string;
 
   try {
-    const prompt = buildPrompt(spec, intake);
+    const prompt = buildPrompt(spec, intake, env);
     const response = await client.messages.create({
       model: MODEL_IDS.sonnet,
       max_tokens: BUILD_MAX_TOKENS,
@@ -252,9 +332,10 @@ export async function runBuildPipeline(
 
   // ── Phase 3: Deploy ───────────────────────────────────────────────────
   let siteUrl: string | undefined;
+  const platform = env.hosting === "vercel" ? "Vercel" : "Cloudflare Pages";
 
-  if (env.VERCEL_TOKEN) {
-    onProgress({ phase: "deploying", message: "Deploying to Vercel..." });
+  if (env.hosting === "vercel" && env.VERCEL_TOKEN) {
+    onProgress({ phase: "deploying", message: `Deploying to ${platform}...` });
 
     try {
       const result = await deployToVercel(
@@ -273,11 +354,34 @@ export async function runBuildPipeline(
         siteUrl,
       });
     } catch (err) {
-      console.error("Deploy failed:", err);
+      console.error("Vercel deploy failed:", err);
+      // Fall through to deliver — email-only
+    }
+  } else if (env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ACCOUNT_ID) {
+    onProgress({ phase: "deploying", message: `Deploying to ${platform}...` });
+
+    try {
+      const result = await deployToCloudflare(
+        intake.business.businessName,
+        html,
+        {
+          CLOUDFLARE_API_TOKEN: env.CLOUDFLARE_API_TOKEN,
+          CLOUDFLARE_ACCOUNT_ID: env.CLOUDFLARE_ACCOUNT_ID,
+        },
+      );
+      siteUrl = result.deploymentUrl;
+
+      onProgress({
+        phase: "deploying",
+        message: `Deployed: ${siteUrl}`,
+        siteUrl,
+      });
+    } catch (err) {
+      console.error("Cloudflare deploy failed:", err);
       // Fall through to deliver — email-only
     }
   } else {
-    console.warn("VERCEL_TOKEN not configured — skipping deployment");
+    console.warn("No deployment credentials configured — skipping deployment");
   }
 
   // ── Phase 4: Deliver ──────────────────────────────────────────────────

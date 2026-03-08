@@ -119,11 +119,14 @@ export const CONVERSATION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 /* ─── Credit System (migrated from graph-types.ts) ─── */
 
+export type HostingPlatform = "cloudflare" | "vercel";
+
 export interface CreditRecord {
   email: string;
   total: number;    // credits allocated
   used: number;     // credits consumed
   plan: "standard" | "starter" | "pro" | "premium";
+  hosting: HostingPlatform;
   createdAt: string;
   updatedAt: string;
 }

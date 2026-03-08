@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useInView } from "@/hooks/useInView";
 import { PricingButton } from "@/components/PricingButton";
+import type { HostingPlatform } from "@/lib/chat-types";
 
 /* ─── Complexity levels ─────────────────────────────────────────────── */
 
@@ -113,8 +114,8 @@ const TIER_CARDS: TierCard[] = [
     tagline: "Simple one-page site for a local business or personal brand.",
     features: [
       "Single-page responsive site",
-      "Cloudflare edge hosting",
       "SSL certificate",
+      "Contact form included",
       "3 revisions included",
     ],
     tier: "starter",
@@ -287,18 +288,72 @@ function ComplexityCalculator() {
   );
 }
 
+/* ─── Hosting Toggle ─────────────────────────────────────────── */
+
+const VERCEL_ADDON_PRICE = 12;
+
+function HostingToggle({
+  hosting,
+  setHosting,
+}: {
+  hosting: HostingPlatform;
+  setHosting: (h: HostingPlatform) => void;
+}) {
+  const { ref, isInView } = useInView();
+
+  return (
+    <div
+      ref={ref}
+      className={`flex justify-center mb-10 transition-opacity ${
+        isInView ? "animate-fade-in-up" : "opacity-0"
+      }`}
+    >
+      <div className="inline-flex items-center gap-1 p-1 rounded-full border border-foreground/10 bg-warm-gray/40">
+        <button
+          onClick={() => setHosting("cloudflare")}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            hosting === "cloudflare"
+              ? "bg-orange/20 text-orange border border-orange/30"
+              : "text-foreground/50 hover:text-foreground/70 border border-transparent"
+          }`}
+        >
+          Cloudflare Pages
+          <span className="ml-1.5 text-xs text-emerald-400 font-mono">Free</span>
+        </button>
+        <button
+          onClick={() => setHosting("vercel")}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            hosting === "vercel"
+              ? "bg-blue/20 text-blue border border-blue/30"
+              : "text-foreground/50 hover:text-foreground/70 border border-transparent"
+          }`}
+        >
+          Vercel + Supabase
+          <span className="ml-1.5 text-xs text-blue font-mono">+${VERCEL_ADDON_PRICE}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Tier Card ─────────────────────────────────────────────── */
 
 function TierCardComponent({
   card,
   index,
+  hosting,
 }: {
   card: TierCard;
   index: number;
+  hosting: HostingPlatform;
 }) {
   const { ref, isInView } = useInView();
   const delay = index * 100;
   const colors = TIER_COLORS[card.tier];
+
+  const basePrice = parseInt(card.price.replace("$", ""), 10);
+  const totalPrice = hosting === "vercel" ? basePrice + VERCEL_ADDON_PRICE : basePrice;
+  const displayPrice = `$${totalPrice}`;
 
   return (
     <div
@@ -333,7 +388,12 @@ function TierCardComponent({
         {card.name}
       </p>
       <div className="flex items-baseline gap-1 mb-4">
-        <span className="text-4xl font-bold text-foreground">{card.price}</span>
+        <span className="text-4xl font-bold text-foreground">{displayPrice}</span>
+        {hosting === "vercel" && (
+          <span className="text-sm text-blue/70 font-mono ml-2">
+            ({card.price} + ${VERCEL_ADDON_PRICE})
+          </span>
+        )}
       </div>
       <p className="text-foreground/50 text-base mb-6">{card.tagline}</p>
 
@@ -344,9 +404,18 @@ function TierCardComponent({
             <span className="text-foreground/60 text-base">{feature}</span>
           </li>
         ))}
+        {/* Show hosting-specific feature */}
+        <li className="flex items-start gap-3">
+          <CheckIcon color={hosting === "vercel" ? "#3DA7DB" : colors.accent} />
+          <span className="text-foreground/60 text-base">
+            {hosting === "vercel"
+              ? "Vercel + Supabase hosting"
+              : "Cloudflare edge hosting"}
+          </span>
+        </li>
       </ul>
 
-      <PricingButton tier={card.tier} />
+      <PricingButton tier={card.tier} hosting={hosting} />
     </div>
   );
 }
@@ -355,6 +424,7 @@ function TierCardComponent({
 
 export function PricingSection() {
   const { ref: headerRef, isInView: headerVisible } = useInView();
+  const [hosting, setHosting] = useState<HostingPlatform>("cloudflare");
 
   return (
     <section id="pricing" className="relative py-32 px-6">
@@ -388,16 +458,20 @@ export function PricingSection() {
         {/* Complexity calculator */}
         <ComplexityCalculator />
 
+        {/* Hosting toggle */}
+        <HostingToggle hosting={hosting} setHosting={setHosting} />
+
         {/* Tier cards */}
         <div className="grid md:grid-cols-3 gap-6">
           {TIER_CARDS.map((card, i) => (
-            <TierCardComponent key={card.id} card={card} index={i} />
+            <TierCardComponent key={card.id} card={card} index={i} hosting={hosting} />
           ))}
         </div>
 
         <p className="text-foreground/30 text-sm mt-8 text-center">
-          Hosting on Cloudflare is free. No recurring fees unless you need
-          ongoing updates.
+          {hosting === "cloudflare"
+            ? "Hosting on Cloudflare is free. No recurring fees unless you need ongoing updates."
+            : "Vercel + Supabase addon provides premium hosting with database-backed forms."}
         </p>
       </div>
     </section>

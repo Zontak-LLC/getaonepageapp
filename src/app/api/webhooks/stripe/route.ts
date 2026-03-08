@@ -93,6 +93,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const customerName = session.customer_details?.name ?? "";
   const tier = session.metadata?.tier;
   const plan = tierToPlan(tier);
+  const hosting = (session.metadata?.hosting === "vercel" ? "vercel" : "cloudflare") as CreditRecord["hosting"];
   const amountTotal = session.amount_total ?? 0;
   const amount = `$${(amountTotal / 100).toFixed(2)}`;
 
@@ -115,6 +116,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       ...existing,
       total: existing.total + CREDITS_INCLUDED,
       plan,
+      hosting,
       updatedAt: now,
     };
     await saveCredits(updated);
@@ -128,6 +130,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       total: CREDITS_INCLUDED,
       used: 0,
       plan,
+      hosting,
       createdAt: now,
       updatedAt: now,
     };

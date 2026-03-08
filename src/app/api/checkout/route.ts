@@ -36,9 +36,11 @@ export async function POST(request: NextRequest) {
   }
 
   let tier: string;
+  let hosting: string;
   try {
-    const body = await request.json() as { tier?: string };
+    const body = await request.json() as { tier?: string; hosting?: string };
     tier = body.tier?.toLowerCase() ?? "";
+    hosting = body.hosting === "vercel" ? "vercel" : "cloudflare";
   } catch {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
@@ -55,26 +57,46 @@ export async function POST(request: NextRequest) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://getaonepageapp.com";
 
+  const hostingLabel = hosting === "vercel" ? "Vercel + Supabase" : "Cloudflare Pages";
+
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+    {
+      price_data: {
+        currency: "usd",
+        unit_amount: price.amount,
+        product_data: {
+          name: price.name,
+          description: `Build, deploy, hosting (${hostingLabel}), SSL, and 3 revisions included.`,
+        },
+      },
+      quantity: 1,
+    },
+  ];
+
+  /* Vercel + Supabase addon ($12) */
+  if (hosting === "vercel") {
+    line_items.push({
+      price_data: {
+        currency: "usd",
+        unit_amount: 1200,
+        product_data: {
+          name: "Vercel + Supabase Hosting",
+          description: "Premium hosting with Supabase database backend.",
+        },
+      },
+      quantity: 1,
+    });
+  }
+
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: session.user.email,
     metadata: {
       tier,
+      hosting,
       userEmail: session.user.email,
     },
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          unit_amount: price.amount,
-          product_data: {
-            name: price.name,
-            description: `Build, deploy, hosting, SSL, and ${3} revisions included.`,
-          },
-        },
-        quantity: 1,
-      },
-    ],
+    line_items,
     success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/#pricing`,
   });
