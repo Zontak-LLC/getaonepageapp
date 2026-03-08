@@ -48,6 +48,11 @@ const portfolio = [
     url: "https://andrey-the-carpenter.pages.dev",
     desc: "30+ years of master craftsmanship in Connecticut — custom woodwork, built-ins, and historic home restoration. Andrey is also our friend.",
   },
+  {
+    name: "Wowcards.com",
+    url: "https://wowcards.vercel.app",
+    desc: "Premium greeting cards and invitations — bold, playful design that makes every occasion feel special.",
+  },
 ];
 
 /* ─── Page ─── */
