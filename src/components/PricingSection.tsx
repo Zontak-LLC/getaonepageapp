@@ -61,6 +61,38 @@ const COMPLEXITY_LEVELS = [
   },
 ] as const;
 
+/* ─── Tier color palettes ─────────────────────────────────────────── */
+
+const TIER_COLORS = {
+  starter: {
+    accent: "#CD7F32",       // Bronze
+    accentLight: "#D4923F",
+    accentDark: "#A0622A",
+    bgTint: "rgba(205,127,50,0.10)",
+    borderTint: "rgba(205,127,50,0.20)",
+    borderHover: "rgba(205,127,50,0.40)",
+    label: "Bronze",
+  },
+  pro: {
+    accent: "#C0C0C0",       // Silver
+    accentLight: "#D4D4D4",
+    accentDark: "#A0A0A0",
+    bgTint: "rgba(192,192,192,0.10)",
+    borderTint: "rgba(192,192,192,0.20)",
+    borderHover: "rgba(192,192,192,0.40)",
+    label: "Silver",
+  },
+  premium: {
+    accent: "#FFD700",       // Gold
+    accentLight: "#FFE033",
+    accentDark: "#CCB000",
+    bgTint: "rgba(255,215,0,0.10)",
+    borderTint: "rgba(255,215,0,0.20)",
+    borderHover: "rgba(255,215,0,0.40)",
+    label: "Gold",
+  },
+} as const;
+
 /* ─── Tier card data ─────────────────────────────────────────────── */
 
 type TierCard = {
@@ -126,10 +158,11 @@ const TIER_CARDS: TierCard[] = [
 
 /* ─── Check Icon ─────────────────────────────────────────────── */
 
-function CheckIcon() {
+function CheckIcon({ color }: { color?: string }) {
   return (
     <svg
-      className="w-4 h-4 text-orange mt-0.5 shrink-0"
+      className="w-4 h-4 mt-0.5 shrink-0"
+      style={{ color: color ?? "var(--color-orange)" }}
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -269,27 +302,35 @@ function TierCardComponent({
 }) {
   const { ref, isInView } = useInView();
   const delay = index * 100;
+  const colors = TIER_COLORS[card.tier];
 
   return (
     <div
       ref={ref}
       id={card.id}
-      className={`relative p-8 rounded-3xl border text-left transition-all flex flex-col ${
+      className={`relative p-8 rounded-3xl text-left transition-all flex flex-col ${
         isInView ? "animate-fade-in-up" : "opacity-0"
-      } ${
-        card.highlight
-          ? "border-2 border-orange/40 bg-warm-gray/40 hover:border-orange/60"
-          : "border border-orange/10 bg-warm-gray/40 hover:border-orange/30"
-      }`}
-      style={{ animationDelay: `${delay}ms` }}
+      } bg-warm-gray/40`}
+      style={{
+        animationDelay: `${delay}ms`,
+        border: card.highlight
+          ? `2px solid ${colors.borderHover}`
+          : `1px solid ${colors.borderTint}`,
+      }}
     >
       {card.highlight && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-warm-black text-sm font-bold px-3 py-1 rounded-full">
+        <div
+          className="absolute -top-3 left-1/2 -translate-x-1/2 text-warm-black text-sm font-bold px-3 py-1 rounded-full"
+          style={{ backgroundColor: colors.accent }}
+        >
           Most Popular
         </div>
       )}
 
-      <p className="text-orange text-sm font-bold uppercase tracking-widest mb-3">
+      <p
+        className="text-sm font-bold uppercase tracking-widest mb-3"
+        style={{ color: colors.accent }}
+      >
         {card.name}
       </p>
       <div className="flex items-baseline gap-1 mb-4">
@@ -300,7 +341,7 @@ function TierCardComponent({
       <ul className="space-y-3 mb-8">
         {card.features.map((feature) => (
           <li key={feature} className="flex items-start gap-3">
-            <CheckIcon />
+            <CheckIcon color={colors.accent} />
             <span className="text-foreground/60 text-base">{feature}</span>
           </li>
         ))}

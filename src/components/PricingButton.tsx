@@ -3,6 +3,12 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
+const TIER_BUTTON_COLORS = {
+  starter: { accent: "#CD7F32", accentDark: "#A0622A", tint: "rgba(205,127,50,0.10)", tintHover: "rgba(205,127,50,0.20)", border: "rgba(205,127,50,0.20)" },
+  pro: { accent: "#C0C0C0", accentDark: "#A0A0A0", tint: "rgba(192,192,192,0.10)", tintHover: "rgba(192,192,192,0.20)", border: "rgba(192,192,192,0.20)" },
+  premium: { accent: "#FFD700", accentDark: "#CCB000", tint: "rgba(255,215,0,0.10)", tintHover: "rgba(255,215,0,0.20)", border: "rgba(255,215,0,0.20)" },
+} as const;
+
 interface PricingButtonProps {
   tier: "starter" | "pro" | "premium";
   label?: string;
@@ -45,19 +51,22 @@ export function PricingButton({
     }
   }
 
+  const colors = TIER_BUTTON_COLORS[tier];
+
   const baseClass =
     "mt-auto block w-full text-center font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-60";
 
-  const variantClass =
+  const inlineStyle =
     variant === "solid"
-      ? "bg-orange hover:bg-orange-dark text-warm-black"
-      : "bg-orange/10 hover:bg-orange/20 text-orange border border-orange/20";
+      ? { backgroundColor: colors.accent, color: "#1A1510" }
+      : { backgroundColor: colors.tint, color: colors.accent, border: `1px solid ${colors.border}` };
 
   return (
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`${baseClass} ${variantClass}`}
+      className={baseClass}
+      style={inlineStyle}
     >
       {loading ? "Redirecting…" : label}
     </button>
