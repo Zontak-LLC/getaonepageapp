@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { href: "#portfolio", label: "Portfolio" },
   { href: "#pricing", label: "Pricing" },
   { href: "#pay", label: "Pay" },
-  { href: "#contact", label: "Contact" },
+  { href: "#contact", label: "Your Project" },
 ];
 
 export function Navbar() {
